@@ -27,7 +27,7 @@ lua/mobdebug.lua: | $(mobdebug_zip)
 ifneq (, $(shell hg summary 2>/dev/null))
   archive = hg archive -X ".hg*" $(1)
 else
-  archive = cd ../ && git archive HEAD --prefix $(1)/ | tar -xf -
+  archive = git archive HEAD --prefix $(1)/ | tar -xf -
 endif
 
 release: debugger | $(mobdebug_zip)
