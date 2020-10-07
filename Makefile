@@ -22,3 +22,17 @@ $(mobdebug_zip): ; wget https://github.com/pkulchenko/MobDebug/archive/$@
 lua/mobdebug.lua: | $(mobdebug_zip)
 	unzip -d $(dir $@) -j $| "*/src/$(notdir $@)"
 
+# Releases.
+
+ifneq (, $(shell hg summary 2>/dev/null))
+  archive = hg archive -X ".hg*" $(1)
+else
+  archive = cd ../ && git archive HEAD --prefix $(1)/ | tar -xf -
+endif
+
+release: debugger | $(mobdebug_zip)
+	cp $| $<
+	make -C $< deps
+	zip -r $<.zip $< -x "*.zip" "$</.git*" && rm -r $<
+debugger: ; $(call archive,$@)
+
