@@ -35,4 +35,3 @@ release: debugger | $(mobdebug_zip)
 	make -C $< deps
 	zip -r $<.zip $< -x "*.zip" "$</.git*" && rm -r $<
 debugger: ; $(call archive,$@)
-

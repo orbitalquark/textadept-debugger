@@ -11,6 +11,24 @@ or Textadept's *modules/* directory, and then putting the following in your
 
     require('debugger')
 
+There will be a top-level "Debug" menu.
+
+Currently, only debugging Lua scripts should work out of the box, provided
+[LuaSocket][] is installed. Running "Debug > Go" will run the current script
+up to the first breakpoint, while "Debug > Step Over" and "Debug > Step Into"
+will pause after the current script's first statement. In order to use this
+module to debug a C program via GDB, you will have to invoke
+[`debugger.start()`](#debugger.start) manually with arguments. For example:
+
+    require('debugger.ansi_c')
+    debugger.start('ansi_c', '/path/to/exe', 'command line args')
+    debugger.continue('ansi_c')
+
+Textadept can debug another instance of itself[1].
+
+[LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
+[1]: https://github.com/orbitalquark/.textadept/blob/0e8efc4ad213ecc2d973c09de213a75cb9bf02ce/init.lua#L150
+
 ## Key Bindings
 
 Windows, Linux, BSD|macOS|Terminal|Command
