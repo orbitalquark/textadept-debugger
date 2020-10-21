@@ -28,7 +28,7 @@ local M = {}
 --     debugger.start('ansi_c', '/path/to/exe', 'command line args')
 --     debugger.continue('ansi_c')
 --
--- Textadept can debug another instance of itself[1].
+-- Textadept can debug another instance of [itself][1].
 --
 -- [LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
 -- [1]: https://github.com/orbitalquark/.textadept/blob/0e8efc4ad213ecc2d973c09de213a75cb9bf02ce/init.lua#L150
@@ -190,21 +190,8 @@ local M = {}
 module('debugger')]]
 
 local events = events
-events.DEBUGGER_BREAKPOINT_ADDED = 'breakpoint_added'
-events.DEBUGGER_BREAKPOINT_REMOVED = 'breakpoint_removed'
-events.DEBUGGER_WATCH_ADDED = 'watch_added'
-events.DEBUGGER_WATCH_REMOVED = 'watch_removed'
-events.DEBUGGER_START = 'debug_start'
-events.DEBUGGER_CONTINUE = 'debug_continue'
-events.DEBUGGER_STEP_INTO = 'debug_step_into'
-events.DEBUGGER_STEP_OVER = 'debug_step_over'
-events.DEBUGGER_STEP_OUT = 'debug_step_out'
-events.DEBUGGER_PAUSE = 'debug_pause'
-events.DEBUGGER_RESTART = 'debug_restart'
-events.DEBUGGER_STOP = 'debug_stop'
-events.DEBUGGER_SET_FRAME = 'debug_set_frame'
-events.DEBUGGER_INSPECT = 'debug_inspect'
-events.DEBUGGER_COMMAND = 'debug_command'
+local debugger_events = {'debugger_breakpoint_added','debugger_breakpoint_removed','debugger_watch_added','debugger_watch_removed','debugger_start','debugger_continue','debugger_step_into','debugger_step_over','debugger_step_out','debugger_pause','debugger_restart','debugger_stop','debugger_set_frame','debugger_inspect','debugger_command'}
+for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 
 M.MARK_BREAKPOINT_COLOR = 0x6D6DD9
 --M.MARK_BREAKPOINT_ALPHA = 128
@@ -329,11 +316,11 @@ function M.remove_breakpoint(file, line)
   if (not file or not line) and breakpoints[lang] then
     local items = {}
     for filename, file_breakpoints in pairs(breakpoints[lang]) do
-      if not file or file == filename then
-        for line in pairs(file_breakpoints) do
-          items[#items + 1] = string.format('%s:%d', filename, line)
-        end
+      if file and file ~= filename then goto continue end
+      for line in pairs(file_breakpoints) do
+        items[#items + 1] = string.format('%s:%d', filename, line)
       end
+      ::continue::
     end
     table.sort(items)
     local button, breakpoints = ui.dialogs.filteredlist{
@@ -714,37 +701,37 @@ events.connect(events.DWELL_END, view.call_tip_cancel)
 -- (Insert 'Debug' menu after 'Tools'.)
 local menubar = textadept.menu.menubar
 for i = 1, #menubar do
-  if menubar[i].title == _L['Tools'] then
-    table.insert(menubar, i + 1, {
-      title = _L['Debug'],
-      {_L['Go/Continue'], M.continue},
-      {_L['Step Over'], M.step_over},
-      {_L['Step Into'], M.step_into},
-      {_L['Step Out'], M.step_out},
-      {_L['Pause/Break'], M.pause},
-      {_L['Restart'], M.restart},
-      {_L['Stop'], M.stop},
-      {''},
-      {_L['Inspect'], M.inspect},
-      {_L['Variables...'], M.variables},
-      {_L['Call Stack...'], M.set_frame},
-      {_L['Evaluate...'], function()
-        -- TODO: command entry loses focus when run from select command
-        -- dialog. This works fine when run from menu directly.
-        local lang = buffer:get_lexer()
-        if not states[lang] or states[lang].executing then return end
-        ui.command_entry.run(function(text)
-          events.emit(events.DEBUGGER_COMMAND, buffer:get_lexer(), text)
-        end, 'lua')
-      end},
-      {''},
-      {_L['Toggle Breakpoint'], M.toggle_breakpoint},
-      {_L['Remove Breakpoint...'], M.remove_breakpoint},
-      {_L['Set Watch Expression'], M.set_watch},
-      {_L['Remove Watch Expression...'], M.remove_watch},
-    })
-    break
-  end
+  if menubar[i].title ~= _L['Tools'] then goto continue end
+  table.insert(menubar, i + 1, {
+    title = _L['Debug'],
+    {_L['Go/Continue'], M.continue},
+    {_L['Step Over'], M.step_over},
+    {_L['Step Into'], M.step_into},
+    {_L['Step Out'], M.step_out},
+    {_L['Pause/Break'], M.pause},
+    {_L['Restart'], M.restart},
+    {_L['Stop'], M.stop},
+    {''},
+    {_L['Inspect'], M.inspect},
+    {_L['Variables...'], M.variables},
+    {_L['Call Stack...'], M.set_frame},
+    {_L['Evaluate...'], function()
+      -- TODO: command entry loses focus when run from select command
+      -- dialog. This works fine when run from menu directly.
+      local lang = buffer:get_lexer()
+      if not states[lang] or states[lang].executing then return end
+      ui.command_entry.run(function(text)
+        events.emit(events.DEBUGGER_COMMAND, buffer:get_lexer(), text)
+      end, 'lua')
+    end},
+    {''},
+    {_L['Toggle Breakpoint'], M.toggle_breakpoint},
+    {_L['Remove Breakpoint...'], M.remove_breakpoint},
+    {_L['Set Watch Expression'], M.set_watch},
+    {_L['Remove Watch Expression...'], M.remove_watch},
+  })
+  break
+  ::continue::
 end
 keys.f5 = M.continue
 keys.f10 = M.step_over
