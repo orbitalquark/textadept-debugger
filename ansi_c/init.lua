@@ -146,7 +146,7 @@ events.connect(events.DEBUGGER_BREAKPOINT_ADDED, function(lang, file, line)
   if lang ~= 'ansi_c' and lang ~= 'cpp' then return end
   local location = string.format('%s:%d', file, line)
   run_command('-break-insert ' .. location)
-  breakpoints.n = breakpoints.n + watchpoints.n + 1
+  breakpoints.n = math.max(breakpoints.n, watchpoints.n) + 1
   breakpoints[breakpoints.n], breakpoints[location] = location, breakpoints.n
 end)
 events.connect(events.DEBUGGER_BREAKPOINT_REMOVED, function(lang, file, line)
@@ -159,7 +159,7 @@ end)
 events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, id)
   if lang ~= 'ansi_c' and lang ~= 'cpp' then return end
   run_command('-break-watch ' .. var)
-  watchpoints.n = breakpoints.n + watchpoints.n + 1
+  watchpoints.n = math.max(breakpoints.n, watchpoints.n) + 1
   watchpoints[watchpoints.n], watchpoints[var] = var, watchpoints.n
 end)
 events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var, id)
@@ -197,7 +197,11 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
   if lang ~= 'ansi_c' and lang ~= 'cpp' then return end
   local output = run_command('-data-evaluate-expression ' .. text)
   local value = output:match('value="(.*)"')
-  if value then ui.print(value) end
+  if value then
+    local orig_view = view
+    ui.print(value)
+    ui.goto_view(orig_view)
+  end
 end)
 
 return M
