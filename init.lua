@@ -268,6 +268,16 @@ local function update_statusbar()
   ui.statusbar_text = string.format('%s (%s)', _L['Debugging'], status)
 end
 
+-- Notifies via a dialog that an action cannot be performed because the debugger
+-- is currently executing.
+local function notify_executing(title)
+  ui.dialogs.ok_msgbox{
+    title = title, text = _L['Debugger is executing'],
+    informative_text = _L['Please wait until debugger is stopped or paused'],
+    icon = 'gtk-dialog-error', no_cancel = true
+  }
+end
+
 -- Sets a breakpoint in file *file* on line number *line*.
 -- Emits a `DEBUGGER_BREAKPOINT_ADDED` event if the debugger is running, or
 -- queues up the event to run in [`debugger.start()`]().
@@ -278,11 +288,7 @@ end
 local function set_breakpoint(file, line)
   local lang = buffer:get_lexer()
   if states[lang] and states[lang].executing then
-    ui.dialogs.ok_msgbox{
-      title = _L['Cannot Set Breakpoint'], text = _L['Debugger is executing'],
-      informative_text = _L['Please wait until debugger is stopped or paused'],
-      icon = 'gtk-dialog-error', no_cancel = true
-    }
+    notify_executing(_L['Cannot Set Breakpoint'])
     return
   end
   if not breakpoints[lang] then breakpoints[lang] = {} end
@@ -305,12 +311,7 @@ end
 function M.remove_breakpoint(file, line)
   local lang = buffer:get_lexer()
   if states[lang] and states[lang].executing then
-    ui.dialogs.ok_msgbox{
-      title = _L['Cannot Remove Breakpoint'],
-      text = _L['Debugger is executing'],
-      informative_text = _L['Please wait until debugger is stopped or paused'],
-      icon = 'gtk-dialog-error', no_cancel = true
-    }
+    notify_executing(_L['Cannot Remove Breakpoint'])
     return
   end
   if (not file or not line) and breakpoints[lang] then
@@ -379,11 +380,7 @@ end
 function M.set_watch(expr)
   local lang = buffer:get_lexer()
   if states[lang] and states[lang].executing then
-    ui.dialogs.ok_msgbox{
-      title = _L['Cannot Set Watch'], text = _L['Debugger is executing'],
-      informative_text = _L['Please wait until debugger is stopped or paused'],
-      icon = 'gtk-dialog-error', no_cancel = true
-    }
+    notify_executing(_L['Cannot Set Watch'])
     return
   end
   if not expr then
@@ -413,11 +410,7 @@ end
 function M.remove_watch(id)
   local lang = buffer:get_lexer()
   if states[lang] and states[lang].executing then
-    ui.dialogs.ok_msgbox{
-      title = _L['Cannot Set Watch'], text = _L['Debugger is executing'],
-      informative_text = _L['Please wait until debugger is stopped or paused'],
-      icon = 'gtk-dialog-error', no_cancel = true
-    }
+    notify_executing(_L['Cannot Set Watch'])
     return
   end
   if not id and watches[lang] then
@@ -638,18 +631,36 @@ end
 -- debugger call stack, unless the debugger is executing (e.g. not at a
 -- breakpoint).
 -- Emits a `DEBUGGER_SET_FRAME` event.
+-- @param level Optional 1-based stack frame index to switch to.
 -- @name set_frame
-function M.set_frame()
+function M.set_frame(level)
   local lang = buffer:get_lexer()
   if not states[lang] or states[lang].executing then return end
   local call_stack = states[lang].call_stack
-  local button, level = ui.dialogs.dropdown{
-    title = _L['Call Stack'], items = call_stack,
-    select = call_stack.pos or 1, button1 = _L['OK'],
-    button2 = _L['Set Frame']
-  }
-  if button ~= 2 then return end
+  if not assert_type(level, 'number/nil', 1) then
+    local button
+    button, level = ui.dialogs.dropdown{
+      title = _L['Call Stack'], items = call_stack,
+      select = call_stack.pos or 1, button1 = _L['OK'],
+      button2 = _L['Set Frame']
+    }
+    if button ~= 2 then return end
+  elseif level < 1 or level > #call_stack then
+    level = math.max(1, math.min(#call_stack, level))
+  end
   events.emit(events.DEBUGGER_SET_FRAME, lang, tonumber(level))
+end
+
+---
+-- Evaluates string *text* in the current debugger context if the debugger is
+-- paused.
+-- The result (if any) is not returned, but likely printed to the message
+-- buffer.
+-- @param text String text to evaluate.
+function M.evaluate(text)
+  local lang = buffer:get_lexer()
+  if not states[lang] or states[lang].executing then return end
+  events.emit(events.DEBUGGER_COMMAND, lang, assert_type(text, 'string', 1))
 end
 
 ---
@@ -678,9 +689,8 @@ events.connect(events.VIEW_NEW, set_marker_properties)
 
 -- Set breakpoint on margin-click.
 events.connect(events.MARGIN_CLICK, function(margin, position, modifiers)
-  if margin == 2 and modifiers == 0 then
-    M.toggle_breakpoint(nil, buffer:line_from_position(position))
-  end
+  if margin ~= 2 or modifiers ~= 0 then return end
+  M.toggle_breakpoint(nil, buffer:line_from_position(position))
 end)
 
 -- Update breakpoints after switching buffers.
@@ -720,9 +730,7 @@ for i = 1, #menubar do
       -- dialog. This works fine when run from menu directly.
       local lang = buffer:get_lexer()
       if not states[lang] or states[lang].executing then return end
-      ui.command_entry.run(function(text)
-        events.emit(events.DEBUGGER_COMMAND, buffer:get_lexer(), text)
-      end, 'lua')
+      ui.command_entry.run(M.evaluate, 'lua')
     end},
     {''},
     {_L['Toggle Breakpoint'], M.toggle_breakpoint},
