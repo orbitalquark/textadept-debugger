@@ -15,6 +15,7 @@ module('debugger.lua')]]
 M.logging = false
 
 local debugger = require('debugger')
+local orig_path, orig_cpath = package.path, package.cpath
 package.path = table.concat({
   _HOME .. '/modules/debugger/lua/?.lua',
   _USERHOME .. '/modules/debugger/lua/?.lua', package.path
@@ -24,6 +25,9 @@ package.cpath = table.concat({
   _USERHOME .. '/modules/debugger/lua/?.so', package.cpath
 }, ';')
 local mobdebug = require('mobdebug')
+local socket = require('socket')
+package.path, package.cpath = orig_path, orig_cpath
+package.loaded['socket'], package.loaded['socket.core'] = nil, nil -- clear
 
 local server, client, proc
 
@@ -108,7 +112,7 @@ events.connect(events.DEBUGGER_START, function(lang, filename, args, timeout)
   if lang ~= 'lua' then return end
   if not filename then filename = buffer.filename end
   if not server then
-    server = require('socket').bind('*', mobdebug.port)
+    server = socket.bind('*', mobdebug.port)
     server:settimeout(timeout or 5)
   end
   if filename ~= '-' then
