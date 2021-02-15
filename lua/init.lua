@@ -5,8 +5,9 @@ local M = {}
 --[[ This comment is for LuaDoc.
 ---
 -- Language debugging support for Lua.
--- Requires LuaSocket to be installed. Textadept's `package.cpath` may need to
--- be modified in order to find it.
+-- Requires LuaSocket to be installed for the external Lua interpreter invoked.
+-- This module bundles a copy of LuaSocket for use with Textadept and its
+-- version of Lua, which may not match the external Lua interpreter's version.
 -- @field logging (boolean)
 --   Whether or not to enable logging. Log messages are printed to stdout.
 module('debugger.lua')]]
@@ -14,15 +15,15 @@ module('debugger.lua')]]
 M.logging = false
 
 local debugger = require('debugger')
-if LINUX then
-  -- LuaSocket may be in an arch-specific directory. Ideally, check arch and use
-  -- a single path, but it's easier to use both and assume one or the other.
-  package.cpath = table.concat({
-    package.cpath, '/usr/lib/x86_64-linux-gnu/lua/5.3/?.so',
-    '/usr/lib/i386-linux-gnu/lua/5.3/?.so'
-  }, ';')
-end
-local mobdebug = require('debugger.lua.mobdebug')
+package.path = table.concat({
+  _HOME .. '/modules/debugger/lua/?.lua',
+  _USERHOME .. '/modules/debugger/lua/?.lua', package.path
+}, ';')
+package.cpath = table.concat({
+  _HOME .. '/modules/debugger/lua/?.so',
+  _USERHOME .. '/modules/debugger/lua/?.so', package.cpath
+}, ';')
+local mobdebug = require('mobdebug')
 
 local server, client, proc
 

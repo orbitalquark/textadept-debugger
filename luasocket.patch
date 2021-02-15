@@ -1,0 +1,28 @@
+--- a/lua/socket.lua	2021-02-14 16:11:00.198125139 -0500
++++ b/lua/socket.lua	2021-02-14 16:12:20.958616941 -0500
+@@ -9,7 +9,13 @@
+ local base = _G
+ local string = require("string")
+ local math = require("math")
+-local socket = require("socket.core")
++local lib = 'socket'
++if OSX then
++  lib = lib .. 'osx'
++elseif WIN32 and CURSES then
++  lib = lib .. '-curses'
++end
++local socket = require(lib .. '.core')
+ 
+ local _M = socket
+ 
+--- a/luasocket/luasocket.c	2021-02-14 17:09:14.466231703 -0500
++++ b/luasocket/luasocket.c	2021-02-14 17:09:31.922343447 -0500
+@@ -64,7 +64,7 @@
+ * Skip a few arguments
+ \*-------------------------------------------------------------------------*/
+ static int global_skip(lua_State *L) {
+-    int amount = luaL_checkint(L, 1);
++    int amount = luaL_checkinteger(L, 1);
+     int ret = lua_gettop(L) - amount - 1;
+     return ret >= 0 ? ret : 0;
+ }

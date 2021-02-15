@@ -1,0 +1,12 @@
+This directory stores the bundled binary LuaSocket library used by Textadept's
+Lua state. It is not intended to be used by the external Lua scripts being
+debugged. LuaSocket must be installed separately for use by external Lua
+interpreters.
+
+Note that while Textadept invokes the external Lua interpreter with a
+`package.path` (NOT `package.cpath`) pointing to this directory's parent, it is
+only meant for picking up the *mobdebug.lua* module so that the client machine
+need not have it installed. This `package.path` setting will incidentally pick
+up *socket.lua*, but since it's a Lua script, there shouldn't be any version
+issues. *socket.core* should point to where the external Lua interpreter finds
+its local copy of LuaSocket, not here.
