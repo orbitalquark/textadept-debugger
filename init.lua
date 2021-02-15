@@ -18,11 +18,13 @@ local M = {}
 -- There will be a top-level "Debug" menu.
 --
 -- Currently, only debugging Lua scripts should work out of the box, provided
--- [LuaSocket][] is installed. Running "Debug > Go" will run the current script
--- up to the first breakpoint, while "Debug > Step Over" and "Debug > Step Into"
--- will pause after the current script's first statement. In order to use this
--- module to debug a C program via GDB, you will have to invoke
--- [`debugger.start()`]() manually with arguments. For example:
+-- [LuaSocket][] is installed for the external Lua interpreter invoked. (This
+-- module has its own copy of LuaSocket that is used by Textadept's internal Lua
+-- state only.) Running "Debug > Go" will run the current script up to the first
+-- breakpoint, while "Debug > Step Over" and "Debug > Step Into" will pause
+-- after the current script's first statement. In order to use this module to
+-- debug a C program via GDB, you will have to invoke [`debugger.start()`]()
+-- manually with arguments. For example:
 --
 --     require('debugger.ansi_c')
 --     debugger.start('ansi_c', '/path/to/exe', 'command line args')

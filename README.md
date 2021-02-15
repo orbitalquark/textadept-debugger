@@ -14,17 +14,19 @@ or Textadept's *modules/* directory, and then putting the following in your
 There will be a top-level "Debug" menu.
 
 Currently, only debugging Lua scripts should work out of the box, provided
-[LuaSocket][] is installed. Running "Debug > Go" will run the current script
-up to the first breakpoint, while "Debug > Step Over" and "Debug > Step Into"
-will pause after the current script's first statement. In order to use this
-module to debug a C program via GDB, you will have to invoke
-[`debugger.start()`](#debugger.start) manually with arguments. For example:
+[LuaSocket][] is installed for the external Lua interpreter invoked. (This
+module has its own copy of LuaSocket that is used by Textadept's internal Lua
+state only.) Running "Debug > Go" will run the current script up to the first
+breakpoint, while "Debug > Step Over" and "Debug > Step Into" will pause
+after the current script's first statement. In order to use this module to
+debug a C program via GDB, you will have to invoke [`debugger.start()`](#debugger.start)
+manually with arguments. For example:
 
     require('debugger.ansi_c')
     debugger.start('ansi_c', '/path/to/exe', 'command line args')
     debugger.continue('ansi_c')
 
-Textadept can debug another instance of itself[1].
+Textadept can debug another instance of [itself][1].
 
 [LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
 [1]: https://github.com/orbitalquark/.textadept/blob/0e8efc4ad213ecc2d973c09de213a75cb9bf02ce/init.lua#L150
@@ -240,6 +242,18 @@ Emitted when a breakpoint is removed.
 
 ## Functions defined by `debugger`
 
+<a id="M.evaluate"></a>
+### `M.evaluate`(*text*)
+
+Evaluates string *text* in the current debugger context if the debugger is
+paused.
+The result (if any) is not returned, but likely printed to the message
+buffer.
+
+Parameters:
+
+* *`text`*: String text to evaluate.
+
 <a id="debugger.continue"></a>
 ### `debugger.continue`(*lang, ...*)
 
@@ -315,12 +329,16 @@ Parameters:
 * *`...`*: 
 
 <a id="debugger.set_frame"></a>
-### `debugger.set_frame`()
+### `debugger.set_frame`(*level*)
 
 Prompts the user to select a stack frame to switch to from the current
 debugger call stack, unless the debugger is executing (e.g. not at a
 breakpoint).
 Emits a `DEBUGGER_SET_FRAME` event.
+
+Parameters:
+
+* *`level`*: Optional 1-based stack frame index to switch to.
 
 <a id="debugger.set_watch"></a>
 ### `debugger.set_watch`(*expr*)
