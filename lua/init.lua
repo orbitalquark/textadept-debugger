@@ -119,10 +119,10 @@ events.connect(events.DEBUGGER_START, function(lang, filename, args, timeout)
   if filename ~= '-' then
     local arg = {
       string.format(
-        [[-e 'package.path = package.path .. ";%s;%s"']],
+        [[-e "package.path = package.path .. ';%s;%s'"]],
         _HOME .. '/modules/debugger/lua/?.lua',
         _USERHOME .. '/modules/debugger/lua/?.lua'),
-      [[-e 'require("mobdebug").start()']],
+      [[-e "require('mobdebug').start()"]],
       string.format('%q', filename),
       args
     }
