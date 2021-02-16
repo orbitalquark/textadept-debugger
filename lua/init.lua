@@ -20,9 +20,10 @@ package.path = table.concat({
   _HOME .. '/modules/debugger/lua/?.lua',
   _USERHOME .. '/modules/debugger/lua/?.lua', package.path
 }, ';')
+local so = not WIN32 and 'so' or 'dll'
 package.cpath = table.concat({
-  _HOME .. '/modules/debugger/lua/?.so',
-  _USERHOME .. '/modules/debugger/lua/?.so', package.cpath
+  _HOME .. '/modules/debugger/lua/?.' .. so,
+  _USERHOME .. '/modules/debugger/lua/?.' .. so, package.cpath
 }, ';')
 local mobdebug = require('mobdebug')
 local socket = require('socket')
