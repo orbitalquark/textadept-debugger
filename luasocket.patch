@@ -5,13 +5,13 @@
  local string = require("string")
  local math = require("math")
 -local socket = require("socket.core")
-+local lib = 'socket'
++local lib = 'socket.core'
 +if OSX then
 +  lib = lib .. 'osx'
 +elseif WIN32 and CURSES then
 +  lib = lib .. '-curses'
 +end
-+local socket = require(lib .. '.core')
++local socket = require(lib)
  
  local _M = socket
  
