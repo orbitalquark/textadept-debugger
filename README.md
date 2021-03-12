@@ -471,6 +471,14 @@ Displays a dialog with variables in the current stack frame.
 
 ## Tables defined by `debugger`
 
+<a id="debugger.aliases"></a>
+### `debugger.aliases`
+
+Map of lexer languages to debugger modules.
+This is for debugger modules that support more than one language (e.g. the
+gdb module supports 'ansi_c' and 'cpp'). Otherwise, a debugger module should
+be named after the lexer language it debugs and an alias is not necessary.
+
 <a id="debugger.project_commands"></a>
 ### `debugger.project_commands`
 
