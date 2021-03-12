@@ -22,18 +22,21 @@ local M = {}
 -- module has its own copy of LuaSocket that is used by Textadept's internal Lua
 -- state only.) Running "Debug > Go" will run the current script up to the first
 -- breakpoint, while "Debug > Step Over" and "Debug > Step Into" will pause
--- after the current script's first statement. In order to use this module to
--- debug a C program via GDB, you will have to invoke [`debugger.start()`]()
--- manually with arguments. For example:
+-- after the current script's first statement.
 --
---     require('debugger.ansi_c')
---     debugger.start('ansi_c', '/path/to/exe', 'command line args')
---     debugger.continue('ansi_c')
+-- Project-specific debugging is configured using the
+-- [`debugger.project_commands`]() table. For example, in order to use this
+-- module to debug a C program via GDB:
+--
+--     local debugger = require('debugger')
+--     debugger.project_commands['/path/to/project'] = function()
+--       return 'ansi_c', '/path/to/exe', 'command line args'
+--     end
 --
 -- Textadept can debug another instance of [itself][1].
 --
 -- [LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
--- [1]: https://github.com/orbitalquark/.textadept/blob/0e8efc4ad213ecc2d973c09de213a75cb9bf02ce/init.lua#L150
+-- [1]: https://github.com/orbitalquark/.textadept/blob/4c936361d45fa8f99e16df0d71fc9306bee216bc/init.lua#L179
 --
 -- ### Key Bindings
 --
@@ -248,6 +251,14 @@ end
 
 local MARK_BREAKPOINT = _SCINTILLA.next_marker_number()
 local MARK_DEBUGLINE = _SCINTILLA.next_marker_number()
+
+---
+-- Map of project root directories to functions that return the language of the
+-- debugger to start followed by the arguments to pass to that debugger's
+-- `DEBUGGER_START` event handler.
+-- @class table
+-- @name project_commands
+M.project_commands = {}
 
 -- Map of lexers to breakpoints.
 -- @class table
@@ -494,7 +505,18 @@ end
 function M.continue(lang, ...)
   if not lang then lang = buffer:get_lexer() end
   if states[lang] and states[lang].executing then return end
-  if not states[lang] and not M.start(lang) then return end
+  if not states[lang] then
+    local f = M.project_commands[io.get_project_root()]
+    if not f then
+      if not M.start(lang) then return end
+    else
+      local args = table.pack(f())
+      if args.n == 0 then return end
+      lang = args[1]
+      pcall(require, 'debugger.' .. lang) -- load events
+      if not M.start(table.unpack(args)) then return end
+    end
+  end
   buffer:marker_delete_all(MARK_DEBUGLINE)
   states[lang].executing = true
   events.emit(events.DEBUGGER_CONTINUE, lang, ...)

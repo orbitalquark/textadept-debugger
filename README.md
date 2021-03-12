@@ -18,18 +18,21 @@ Currently, only debugging Lua scripts should work out of the box, provided
 module has its own copy of LuaSocket that is used by Textadept's internal Lua
 state only.) Running "Debug > Go" will run the current script up to the first
 breakpoint, while "Debug > Step Over" and "Debug > Step Into" will pause
-after the current script's first statement. In order to use this module to
-debug a C program via GDB, you will have to invoke [`debugger.start()`](#debugger.start)
-manually with arguments. For example:
+after the current script's first statement.
 
-    require('debugger.ansi_c')
-    debugger.start('ansi_c', '/path/to/exe', 'command line args')
-    debugger.continue('ansi_c')
+Project-specific debugging is configured using the
+[`debugger.project_commands`](#debugger.project_commands) table. For example, in order to use this
+module to debug a C program via GDB:
+
+    local debugger = require('debugger')
+    debugger.project_commands['/path/to/project'] = function()
+      return 'ansi_c', '/path/to/exe', 'command line args'
+    end
 
 Textadept can debug another instance of [itself][1].
 
 [LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
-[1]: https://github.com/orbitalquark/.textadept/blob/0e8efc4ad213ecc2d973c09de213a75cb9bf02ce/init.lua#L150
+[1]: https://github.com/orbitalquark/.textadept/blob/4c936361d45fa8f99e16df0d71fc9306bee216bc/init.lua#L179
 
 ## Key Bindings
 
@@ -125,6 +128,9 @@ Emitted when a symbol should be inspected.
 Emitted when execution should be paused.
   This is only emitted when the debugger is running and executing (e.g. not
   at a breakpoint).
+  If a listener pauses the debugger, it *must* return `true`. Otherwise, it
+  is assumed that debugger could not be paused. Listeners *must not* return
+  `false` (they can return `nil`).
   Arguments:
 
   * _`lang`_: The lexer name of the language being debugged.
@@ -462,5 +468,14 @@ Parameters:
 
 Displays a dialog with variables in the current stack frame.
 
+
+## Tables defined by `debugger`
+
+<a id="debugger.project_commands"></a>
+### `debugger.project_commands`
+
+Map of project root directories to functions that return the language of the
+debugger to start followed by the arguments to pass to that debugger's
+`DEBUGGER_START` event handler.
 
 ---
