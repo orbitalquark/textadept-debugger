@@ -146,7 +146,7 @@ end)
 events.connect(events.DEBUGGER_BREAKPOINT_ADDED, function(lang, file, line)
   if lang ~= 'ansi_c' and lang ~= 'cpp' then return end
   local location = string.format('%s:%d', file, line)
-  run_command('-break-insert ' .. location)
+  run_command('-break-insert -f ' .. location)
   breakpoints.n = math.max(breakpoints.n, watchpoints.n) + 1
   breakpoints[breakpoints.n], breakpoints[location] = location, breakpoints.n
 end)
