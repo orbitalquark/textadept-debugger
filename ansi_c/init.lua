@@ -124,6 +124,7 @@ end)
 events.connect(events.DEBUGGER_PAUSE, function(lang)
   if lang ~= 'ansi_c' and lang ~= 'cpp' or not pid then return end
   os.execute('kill -2 ' .. pid) -- SIGINT
+  return true -- successfully paused
 end)
 events.connect(events.DEBUGGER_RESTART, function(lang)
   if lang == 'ansi_c' or lang == 'cpp' then run_command('-exec-run') end

@@ -138,6 +138,9 @@ local M = {}
 --   Emitted when execution should be paused.
 --   This is only emitted when the debugger is running and executing (e.g. not
 --   at a breakpoint).
+--   If a listener pauses the debugger, it *must* return `true`. Otherwise, it
+--   is assumed that debugger could not be paused. Listeners *must not* return
+--   `false` (they can return `nil`).
 --   Arguments:
 --
 --   * _`lang`_: The lexer name of the language being debugged.
@@ -549,7 +552,9 @@ end
 function M.pause(...)
   local lang = buffer:get_lexer()
   if not states[lang] or not states[lang].executing then return end
-  events.emit(events.DEBUGGER_PAUSE, lang, ...)
+  if events.emit(events.DEBUGGER_PAUSE, lang, ...) then
+    states[lang].executing = false
+  end
 end
 
 ---
