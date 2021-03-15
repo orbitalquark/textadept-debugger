@@ -532,7 +532,7 @@ function M.continue(lang, ...)
       if not M.start(lang) then return end
     else
       local args = table.pack(f())
-      if args.n == 0 then return end
+      if args.n == 0 or not args[1] then return end
       lang = get_lang(args[1])
       pcall(require, 'debugger.' .. lang) -- load events
       if not M.start(table.unpack(args)) then return end
