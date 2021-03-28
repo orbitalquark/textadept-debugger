@@ -40,7 +40,7 @@ local function run_command(cmd)
   return output
 end
 
-local function unescape(value) return value:gsub('\\', '') end
+local function unescape(value) return (value:gsub('\\', '')) end
 
 -- Fetches the current call stack and updates the debugger state.
 -- It is possible that the debugger is being forcibly paused without any file
