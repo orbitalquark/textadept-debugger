@@ -28,8 +28,7 @@ local function read_output()
 end
 
 -- Runs the gdb command *cmd* and returns its output.
--- The returned output may contain unrelated asynchronous output (out of band
--- records).
+-- The returned output may contain unrelated asynchronous output (out of band records).
 -- @param cmd String gdb command to run.
 -- @return string command output
 local function run_command(cmd)
@@ -43,8 +42,8 @@ end
 local function unescape(value) return (value:gsub('\\', '')) end
 
 -- Fetches the current call stack and updates the debugger state.
--- It is possible that the debugger is being forcibly paused without any file
--- or line information in the current stack frame, so account for that.
+-- It is possible that the debugger is being forcibly paused without any file or line information
+-- in the current stack frame, so account for that.
 local function update_state()
   -- Fetch the current frame information.
   local output = run_command('-stack-info-frame')
@@ -68,29 +67,22 @@ local function update_state()
   -- Fetch frame variables.
   local variables = {}
   output = run_command('-stack-list-variables --simple-values')
-  for k, v in output:gmatch('name="(.-)".-value="(.-)"') do
-    variables[k] = unescape(v)
-  end
+  for k, v in output:gmatch('name="(.-)".-value="(.-)"') do variables[k] = unescape(v) end
   output = run_command('-stack-list-locals --simple-values')
-  for k, v in output:gmatch('name="(.-)".-value="(.-)"') do
-    variables[k] = unescape(v)
-  end
+  for k, v in output:gmatch('name="(.-)".-value="(.-)"') do variables[k] = unescape(v) end
   -- Update the debugger state.
-  debugger.update_state{
-    file = file, line = line, call_stack = call_stack, variables = variables
-  }
+  debugger.update_state{file = file, line = line, call_stack = call_stack, variables = variables}
 end
 
 -- Starts the gdb debugger.
--- Launches the given executable in a separate process and uses stdin/stdout
--- for communication. A string of command line arguments, a string working
--- directory, and a table environment for the executable are optional.
+-- Launches the given executable in a separate process and uses stdin/stdout for communication. A
+-- string of command line arguments, a string working directory, and a table environment for
+-- the executable are optional.
 events.connect(events.DEBUGGER_START, function(lang, exe, args, cwd, env)
   if lang ~= 'gdb' or not exe then return end
   local args = {
     string.format('gdb -interpreter mi2 --args %s %s', exe, args or ''),
-    cwd or exe:match('^.+[/\\]') or lfs.currentdir(),
-    function(output)
+    cwd or exe:match('^.+[/\\]') or lfs.currentdir(), function(output)
       if M.logging then print(output) end
       if output:find('%(gdb%)') then update_state() end
     end
@@ -125,17 +117,15 @@ events.connect(events.DEBUGGER_STEP_OVER, function(lang)
   if not run then events.emit(events.DEBUGGER_CONTINUE, lang) end
   run_command('-exec-next')
 end)
-events.connect(events.DEBUGGER_STEP_OUT, function(lang)
-  if lang == 'gdb' then run_command('-exec-finish') end
-end)
+events.connect(events.DEBUGGER_STEP_OUT,
+  function(lang) if lang == 'gdb' then run_command('-exec-finish') end end)
 events.connect(events.DEBUGGER_PAUSE, function(lang)
   if lang ~= 'gdb' or not pid then return end
   os.execute('kill -2 ' .. pid) -- SIGINT
   return true -- successfully paused
 end)
-events.connect(events.DEBUGGER_RESTART, function(lang)
-  if lang == 'gdb' then run_command('-exec-run') end
-end)
+events.connect(events.DEBUGGER_RESTART,
+  function(lang) if lang == 'gdb' then run_command('-exec-run') end end)
 
 -- Stops the gdb debugger.
 events.connect(events.DEBUGGER_STOP, function(lang)
@@ -147,9 +137,8 @@ events.connect(events.DEBUGGER_STOP, function(lang)
 end)
 
 -- Add and remove breakpoints and watches.
--- Since gdb creates breakpoints for watches (watchpoints), they both must share
--- the same ID pool. Handle that here and do not consider the default watch ID
--- implementation.
+-- Since gdb creates breakpoints for watches (watchpoints), they both must share the same ID
+-- pool. Handle that here and do not consider the default watch ID implementation.
 events.connect(events.DEBUGGER_BREAKPOINT_ADDED, function(lang, file, line)
   if lang ~= 'gdb' then return end
   local location = string.format('%s:%d', file, line)

@@ -17,29 +17,26 @@ clean: ; rm -f luasocket/*.o lua/socket/*.so lua/socket/*.dll
 CROSS_WIN = i686-w64-mingw32-
 CROSS_OSX = x86_64-apple-darwin17-cc
 
-luasocket_objs = $(addprefix luasocket/, luasocket.o timeout.o buffer.o \
-  io.o auxiliar.o options.o inet.o usocket.o except.o select.o tcp.o udp.o)
-luasocket_win_objs = $(subst usocket,wsocket, \
-  $(addsuffix -win.o, $(basename $(luasocket_objs))))
+luasocket_objs = $(addprefix luasocket/, luasocket.o timeout.o buffer.o io.o auxiliar.o options.o \
+  inet.o usocket.o except.o select.o tcp.o udp.o)
+luasocket_win_objs = $(subst usocket,wsocket, $(addsuffix -win.o, $(basename $(luasocket_objs))))
 luasocket_osx_objs = $(addsuffix -osx.o, $(basename $(luasocket_objs)))
 
 lua/socket/core.so: $(luasocket_objs)
 	$(CC) -shared $(CFLAGS) -o $@ $^ $(LDFLAGS)
 lua/socket/core.dll: $(luasocket_win_objs) luasocket/lua.la
-	$(CROSS_WIN)$(CC) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o \
-		$@ $^ $(LDFLAGS) -lws2_32
+	$(CROSS_WIN)$(CC) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o $@ $^ $(LDFLAGS) -lws2_32
 lua/socket/core-curses.dll: $(luasocket_win_objs) luasocket/lua-curses.la
-	$(CROSS_WIN)$(CC) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o \
-		$@ $^ $(LDFLAGS) -lws2_32
+	$(CROSS_WIN)$(CC) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o $@ $^ $(LDFLAGS) -lws2_32
 lua/socket/coreosx.so: $(luasocket_osx_objs)
 	$(CROSS_OSX) -shared $(CFLAGS) -undefined dynamic_lookup -o $@ $^
 
 $(luasocket_objs): %.o: %.c
-	$(CC) -c $(CFLAGS) $(luasocket_flags) \
-		-DLUASOCKET_API='__attribute__((visibility("default")))' $< -o $@
+	$(CC) -c $(CFLAGS) $(luasocket_flags) -DLUASOCKET_API='__attribute__((visibility("default")))' \
+		$< -o $@
 $(luasocket_win_objs): %-win.o: %.c
-	$(CROSS_WIN)$(CC) -c $(CFLAGS) $(luasocket_flags) -DLUASOCKET_INET_PTON \
-		-DWINVER=0x0501 -DLUASOCKET_API='__declspec(dllexport)' $< -o $@
+	$(CROSS_WIN)$(CC) -c $(CFLAGS) $(luasocket_flags) -DLUASOCKET_INET_PTON -DWINVER=0x0501 \
+		-DLUASOCKET_API='__declspec(dllexport)' $< -o $@
 $(luasocket_osx_objs): %-osx.o: %.c
 	$(CROSS_OSX) -c $(CFLAGS) $(luasocket_flags) -DUNIX_HAS_SUN_LEN \
 		-DLUASOCKET_API='__attribute__((visibility("default")))' $< -o $@
@@ -79,8 +76,7 @@ luasocket: | $(luasocket_zip)
 	mv luasocket/socket.lua lua
 	patch -p1 < luasocket.patch
 $(mobdebug_zip): ; wget https://github.com/pkulchenko/MobDebug/archive/$@
-lua/mobdebug.lua: | $(mobdebug_zip)
-	unzip -d $(dir $@) -j $| "*/src/$(notdir $@)"
+lua/mobdebug.lua: | $(mobdebug_zip) ; unzip -d $(dir $@) -j $| "*/src/$(notdir $@)"
 
 # Releases.
 
