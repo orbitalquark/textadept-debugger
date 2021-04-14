@@ -329,19 +329,20 @@ function M.remove_breakpoint(file, line)
     local items = {}
     for filename, file_breakpoints in pairs(breakpoints[lang]) do
       if file and file ~= filename then goto continue end
-      for line in pairs(file_breakpoints) do
-        items[#items + 1] = string.format('%s:%d', filename, line)
+      for break_line in pairs(file_breakpoints) do
+        items[#items + 1] = string.format('%s:%d', filename, break_line)
       end
       ::continue::
     end
     table.sort(items)
-    local button, breakpoints = ui.dialogs.filteredlist{
+    local button
+    button, items = ui.dialogs.filteredlist{
       title = _L['Remove Breakpoint'], columns = _L['Breakpoint:'], items = items,
       string_output = true, select_multiple = true
     }
-    if button ~= _L['OK'] or not breakpoints then return end
-    for i = 1, #breakpoints do
-      file, line = breakpoints[i]:match('^(.+):(%d+)$')
+    if button ~= _L['OK'] or not items then return end
+    for i = 1, #items do
+      file, line = items[i]:match('^(.+):(%d+)$')
       M.remove_breakpoint(file, tonumber(line))
     end
     return
@@ -582,7 +583,7 @@ end
 --   name of the current lexer.
 -- @name stop
 function M.stop(lang, ...)
-  lang = get_lang()
+  lang = get_lang(lang)
   if not states[lang] then return end -- not debugging
   events.emit(events.DEBUGGER_STOP, lang, ...)
   buffer:marker_delete_all(MARK_DEBUGLINE)

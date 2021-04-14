@@ -59,9 +59,9 @@ local function update_state()
   local call_stack = {}
   for frame in output:gmatch('frame=(%b{})') do
     local name = frame:match('func="(.-)"')
-    local file = frame:match('file="(.-)"')
-    local line = tonumber(frame:match('line="(%d+)"') or 0)
-    call_stack[#call_stack + 1] = string.format('(%s) %s:%d', name, file, line)
+    local frame_file = frame:match('file="(.-)"')
+    local frame_line = tonumber(frame:match('line="(%d+)"') or 0)
+    call_stack[#call_stack + 1] = string.format('(%s) %s:%d', name, frame_file, frame_line)
   end
   call_stack.pos = level + 1
   -- Fetch frame variables.
@@ -80,7 +80,7 @@ end
 -- the executable are optional.
 events.connect(events.DEBUGGER_START, function(lang, exe, args, cwd, env)
   if lang ~= 'gdb' or not exe then return end
-  local args = {
+  args = {
     string.format('gdb -interpreter mi2 --args %s %s', exe, args or ''),
     cwd or exe:match('^.+[/\\]') or lfs.currentdir(), function(output)
       if M.logging then print(output) end

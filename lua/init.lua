@@ -73,7 +73,7 @@ end
 -- Handles continue, stop over, step into, and step out of events, fetches the current call
 -- stack, and updates the debugger state.
 -- @param action MobDebug action to run. One of 'run', 'step', 'over', or 'out'.
-function handle_continuation(action)
+local function handle_continuation(action)
   handle(action, function(file, line)
     if not file or not line then
       debugger.stop('lua')
