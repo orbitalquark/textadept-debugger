@@ -699,17 +699,27 @@ events.connect(events.MARGIN_CLICK, function(margin, position, modifiers)
   M.toggle_breakpoint(nil, buffer:line_from_position(position))
 end)
 
--- Update breakpoints after switching buffers.
-events.connect(events.BUFFER_AFTER_SWITCH, function()
+-- Refresh breakpoints after switching buffers and when refreshing buffer text.
+local function refresh_breakpoints()
   local lang, file = get_lang(), buffer.filename
   if not breakpoints[lang] or not breakpoints[lang][file] then return end
   buffer:marker_delete_all(MARK_BREAKPOINT)
   for line in pairs(breakpoints[lang][file]) do buffer:marker_add(line, MARK_BREAKPOINT) end
-end)
+end
+events.connect(events.BUFFER_AFTER_SWITCH, refresh_breakpoints)
+events.connect(events.BUFFER_AFTER_REPLACE_TEXT, refresh_breakpoints)
 
 -- Inspect symbols and show call tips during mouse dwell events.
 events.connect(events.DWELL_START, function(pos) M.inspect(pos) end)
 events.connect(events.DWELL_END, view.call_tip_cancel)
+
+-- Save/restore breakpoints and watches over resets.
+events.connect(events.RESET_BEFORE, function(persist)
+  persist.debugger = {breakpoints = breakpoints, watches = watches}
+end)
+events.connect(events.RESET_AFTER, function(persist)
+  breakpoints, watches = persist.debugger.breakpoints, persist.debugger.watches
+end)
 
 -- Add menu entries and configure key bindings.
 -- (Insert 'Debug' menu after 'Tools'.)
