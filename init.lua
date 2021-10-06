@@ -168,6 +168,8 @@ local M = {}
 --
 --   * _`lang`_: The lexer name of the language being debugged.
 --   * _`text`_: The text of the command to run.
+-- @field use_status_buffers (boolean)
+--   Whether or not to use debug status buffers like variables, call stack, etc.
 -- @field MARK_BREAKPOINT_COLOR (number)
 --   The color of breakpoint markers.
 -- @field MARK_DEBUGLINE_COLOR (number)
@@ -184,6 +186,8 @@ M.MARK_BREAKPOINT_COLOR = 0x6D6DD9
 -- M.MARK_BREAKPOINT_ALPHA = 128
 M.MARK_DEBUGLINE_COLOR = 0x6DD96D
 -- M.MARK_DEBUGLINE_ALPHA = 128
+M.MARK_CALLSTACK_COLOR = 0x6DD9D9
+-- M.MARK_CALLSTACK_ALPHA = 128
 
 -- Localizations.
 local _L = _L
@@ -205,6 +209,8 @@ if not rawget(_L, 'Remove Breakpoint') then
   _L['Cannot Remove Watch'] = 'Cannot Remove Watch'
   _L['Remove Watch'] = 'Remove Watch'
   _L['Error Starting Debugger'] = 'Error Starting Debugger'
+  _L['[Variables]'] = '[Variables]'
+  _L['[Call Stack]'] = '[Call Stack]'
   _L['Debugger started'] = 'Debugger started'
   _L['Debugger stopped'] = 'Debugger stopped'
   _L['Variables'] = 'Variables'
@@ -220,8 +226,9 @@ if not rawget(_L, 'Remove Breakpoint') then
   _L['Pause/Break'] = 'Pause/_Break'
   _L['Restart'] = '_Restart'
   _L['Inspect'] = 'I_nspect'
-  _L['Variables...'] = '_Variables...'
-  _L['Call Stack...'] = 'Call Stac_k...'
+  _L['View Variables'] = 'View _Variables'
+  _L['View Call Stack'] = 'View Ca_ll Stack'
+  _L['Set Call Stack Frame...'] = 'Set Call Stac_k Frame...'
   _L['Evaluate...'] = '_Evaluate...'
   _L['Toggle Breakpoint'] = 'Toggle _Breakpoint'
   _L['Remove Breakpoint...'] = 'Remo_ve Breakpoint...'
@@ -231,6 +238,9 @@ end
 
 local MARK_BREAKPOINT = _SCINTILLA.next_marker_number()
 local MARK_DEBUGLINE = _SCINTILLA.next_marker_number()
+local MARK_CALLSTACK = _SCINTILLA.next_marker_number()
+
+M.use_status_buffers = true
 
 ---
 -- Map of project root directories to functions that return the language of the debugger to
@@ -441,6 +451,13 @@ function M.remove_watch(id)
   end
 end
 
+-- Returns the specified debug buffer, creating it if necessary.
+local function debug_buffer(type)
+  for _, buffer in ipairs(_BUFFERS) do if buffer._type == type then return buffer end end
+  buffer.new()._type = type
+  return buffer
+end
+
 ---
 -- Starts a debugger and adds any queued breakpoints and watches.
 -- Emits a `DEBUGGER_START` event, passing along any arguments given. If a debugger cannot be
@@ -478,6 +495,23 @@ function M.start(lang, ...)
   for i = 1, watches[lang].n do
     local watch = watches[lang][i]
     if watch then events.emit(events.DEBUGGER_WATCH_ADDED, lang, watch, i) end
+  end
+  if M.use_status_buffers then
+    if #_VIEWS == 1 then
+      -- Split into 3 lower views: message buffer, variables, call stack.
+      -- Note if `ui.tabs` is true, the message buffer will be in a separate tab, not split view.
+      ui.print(_L['Debugger started'])
+      view:split(#_VIEWS > 1)
+      view.size = ui.size[1] // #_VIEWS
+      view:goto_buffer(debug_buffer(_L['[Variables]']))
+      ui.update() -- ensure correct sizing for next split
+      local variables, call_stack = view:split(true)
+      view:goto_buffer(debug_buffer(_L['[Call Stack]']))
+      ui.goto_view(_VIEWS[1])
+    elseif #_VIEWS >= 3 then -- assume previous debug layout
+      _VIEWS[#_VIEWS - 1]:goto_buffer(debug_buffer(_L['[Variables]']))
+      _VIEWS[#_VIEWS]:goto_buffer(debug_buffer(_L['[Call Stack]']))
+    end
   end
   ui.statusbar_text = _L['Debugger started']
   events.disconnect(events.UPDATE_UI, update_statusbar) -- just in case
@@ -588,7 +622,16 @@ function M.stop(lang, ...)
   events.emit(events.DEBUGGER_STOP, lang, ...)
   buffer:marker_delete_all(MARK_DEBUGLINE)
   states[lang] = nil
+  for _, buffer in ipairs(_BUFFERS) do
+    if buffer._type == _L['[Variables]'] or buffer._type == _L['[Call Stack]'] then
+      buffer:marker_delete_all(-1)
+      buffer:clear_all()
+      buffer:empty_undo_buffer()
+      buffer:set_save_point()
+    end
+  end
   events.disconnect(events.UPDATE_UI, update_statusbar)
+  if M.use_status_buffers then ui.print(_L['Debugger stopped']) end
   ui.statusbar_text = _L['Debugger stopped']
 end
 
@@ -609,31 +652,64 @@ function M.update_state(state)
   assert(type(state.call_stack) == 'table' and type(state.call_stack.pos) == 'number',
     'state.call_stack must be a table with a numeric pos field')
   if not state.variables then state.variables = {} end
-  local file = state.file:iconv('UTF-8', _CHARSET)
-  if state.file ~= buffer.filename then ui.goto_file(file) end
   states[get_lang()] = state
+  if M.use_status_buffers then
+    M.variables()
+    M.call_stack()
+  end
+  if state.file ~= buffer.filename then ui.goto_file(state.file:iconv('UTF-8', _CHARSET)) end
   buffer:marker_delete_all(MARK_DEBUGLINE)
   buffer:marker_add(state.line, MARK_DEBUGLINE)
   buffer:goto_line(state.line)
 end
 
 ---
--- Displays a dialog with variables in the current stack frame.
+-- Updates the buffer containing variables in the current stack frame.
+-- Any variables that have changed since the last updated are marked.
 -- @name variables
 function M.variables()
   local lang = get_lang()
   if not states[lang] or states[lang].executing then return end
+  if #_VIEWS == 1 then view:split() end
+  local buffer = debug_buffer(_L['[Variables]'])
+  local prev_variables = {}
+  for i = 1, buffer.line_count do
+    local name, value = buffer:get_line(i):match('^(%S+)%s*=%s*(.-)\r?\n$')
+    if name then prev_variables[name] = value end
+  end
+  -- TODO: save/restore view first visible line?
+  buffer:marker_delete_all(-1)
+  buffer:set_text(_L['Variables'] .. '\n')
   local names = {}
   for k in pairs(states[lang].variables) do names[#names + 1] = k end
   table.sort(names)
-  local variables = {}
-  for _, name in ipairs(names) do
-    variables[#variables + 1] = name
-    variables[#variables + 1] = states[lang].variables[name]
+  for i = 1, #names do
+    local name, value = names[i], states[lang].variables[names[i]]
+    buffer:append_text(string.format('%s = %s\n', name, value))
+    if prev_variables[name] ~= nil and value ~= prev_variables[name] then
+      buffer:marker_add(1 + i, MARK_BREAKPOINT) -- recycle this marker
+    end
   end
-  ui.dialogs.filteredlist{
-    title = _L['Variables'], columns = {_L['Name'], _L['Value']}, items = variables
-  }
+  buffer:empty_undo_buffer()
+  buffer:set_save_point()
+end
+
+---
+-- Updates the buffer containing the call stack.
+-- @name call_stack
+function M.call_stack()
+  local lang = get_lang()
+  if not states[lang] or states[lang].executing then return end
+  if #_VIEWS == 1 then view:split() end
+  local buffer = debug_buffer(_L['[Call Stack]'])
+  buffer._debug_view = view -- for switching back prior to setting frame
+  buffer:marker_delete_all(-1)
+  buffer:set_text(_L['Call Stack'] .. '\n')
+  local call_stack = states[lang].call_stack
+  for i = 1, #call_stack do buffer:append_text(call_stack[i] .. '\n') end
+  buffer:marker_add(1 + (call_stack.pos or 1), MARK_CALLSTACK)
+  buffer:empty_undo_buffer()
+  buffer:set_save_point()
 end
 
 ---
@@ -643,6 +719,7 @@ end
 -- @param level Optional 1-based stack frame index to switch to.
 -- @name set_frame
 function M.set_frame(level)
+  if buffer._type == _L['[Call Stack]'] then ui.goto_view(buffer._debug_view) end
   local lang = get_lang()
   if not states[lang] or states[lang].executing then return end
   local call_stack = states[lang].call_stack
@@ -686,10 +763,13 @@ local function set_marker_properties()
   view.mouse_dwell_time = 500
   view:marker_define(MARK_BREAKPOINT, view.MARK_FULLRECT)
   view:marker_define(MARK_DEBUGLINE, view.MARK_FULLRECT)
+  view:marker_define(MARK_CALLSTACK, view.MARK_FULLRECT)
   view.marker_back[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_COLOR
   -- view.marker_alpha[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_ALPHA
   view.marker_back[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_COLOR
   -- view.marker_alpha[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_ALPHA
+  view.marker_back[MARK_CALLSTACK] = M.MARK_CALLSTACK_COLOR
+  -- view.marker_alpha[MARK_CALLSTACK] = M.MARK_CALLSTACK_ALPHA
 end
 events.connect(events.VIEW_NEW, set_marker_properties)
 
@@ -721,6 +801,16 @@ events.connect(events.RESET_AFTER, function(persist)
   breakpoints, watches = persist.debugger.breakpoints, persist.debugger.watches
 end)
 
+-- Set call stack frame on Enter or double-click.
+local function is_cs_buf(buf) return buf._type == _L['[Call Stack]'] end
+events.connect(events.KEYPRESS, function(code)
+  if keys.KEYSYMS[code] ~= '\n' or not is_cs_buf(buffer) then return end
+  M.set_frame(buffer:line_from_position(buffer.current_pos) - 1)
+  return true
+end)
+events.connect(events.DOUBLE_CLICK,
+  function(_, line) if is_cs_buf(buffer) then M.set_frame(line - 1) end end)
+
 -- Add menu entries and configure key bindings.
 -- (Insert 'Debug' menu after 'Tools'.)
 local menubar = textadept.menu.menubar
@@ -738,8 +828,9 @@ for i = 1, #menubar do
     {_L['Stop'], M.stop},
     {''},
     {_L['Inspect'], M.inspect},
-    {_L['Variables...'], M.variables},
-    {_L['Call Stack...'], M.set_frame},
+    {_L['View Variables'], M.variables},
+    {_L['View Call Stack'], M.call_stack},
+    {_L['Set Call Stack Frame...'], M.set_frame},
     {_L['Evaluate...'], function()
       -- TODO: command entry loses focus when run from select command dialog. This works fine
       -- when run from menu directly.
