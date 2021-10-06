@@ -70,8 +70,30 @@ local function handle(action, callback)
   end
 end
 
--- Handles continue, stop over, step into, and step out of events, fetches the current call
--- stack, and updates the debugger state.
+local stack -- from MobDebug
+
+-- Computes current debugger state.
+local function get_state()
+  -- Lookup frame.
+  local frame = stack[stack.pos][1]
+  local file, line = frame[2], frame[4]
+  -- Lookup stack frames.
+  local call_stack = {}
+  for _, frame in ipairs(stack) do
+    frame = frame[1]
+    call_stack[#call_stack + 1] = string.format('(%s) %s:%d', frame[1] or frame[5], frame[2],
+      frame[4])
+  end
+  call_stack.pos = stack.pos
+  -- Lookup variables (index 2) and upvalues (index 3) from the current frame.
+  local variables = {}
+  for k, v in pairs(stack[call_stack.pos][2]) do variables[k] = v[2] end
+  for k, v in pairs(stack[call_stack.pos][3]) do variables[k] = v[2] end
+  -- Return debugger state.
+  return {file = file, line = line, call_stack = call_stack, variables = variables}
+end
+
+-- Handles continue, stop over, step into, and step out of events, and updates the debugger state.
 -- @param action MobDebug action to run. One of 'run', 'step', 'over', or 'out'.
 local function handle_continuation(action)
   handle(action, function(file, line)
@@ -81,21 +103,13 @@ local function handle_continuation(action)
     end
     -- Fetch stack frames.
     client:settimeout(nil)
-    local stack = mobdebug.handle('stack', client)
+    stack = mobdebug.handle('stack', client)
+    stack.pos = 1
     client:settimeout(0)
-    local call_stack = {}
-    for _, frame in ipairs(stack) do
-      frame = frame[1]
-      call_stack[#call_stack + 1] = string.format('(%s) %s:%d', frame[1] or frame[5], frame[7],
-        frame[4])
-    end
-    call_stack.pos = 1
-    -- Fetch variables (index 2) and upvalues (index 3) from the current frame.
-    local variables = {}
-    for k, v in pairs(stack[call_stack.pos][2]) do variables[k] = v[2] end
-    for k, v in pairs(stack[call_stack.pos][3]) do variables[k] = v[2] end
     -- Update the debugger state.
-    debugger.update_state{file = file, line = line, call_stack = call_stack, variables = variables}
+    local state = get_state()
+    state.file, state.line = file, line -- override just to be safe
+    debugger.update_state(state)
   end)
 end
 
@@ -165,14 +179,17 @@ events.connect(events.DEBUGGER_WATCH_REMOVED,
 
 -- Set the current stack frame.
 events.connect(events.DEBUGGER_SET_FRAME, function(lang, level)
-  -- Unimplemented.
-  -- TODO: just jump to location? Note that inspect will not work and variables should probably
-  -- come from call stack?
+  if lang ~= 'lua' then return end
+  stack.pos = math.max(1, math.min(#stack, level or 1))
+  debugger.update_state(get_state())
 end)
 
 -- Inspect the value of a symbol/variable at a given position.
 events.connect(events.DEBUGGER_INSPECT, function(lang, pos)
   if lang ~= 'lua' then return end
+  -- At this time, MobDebug cannot evaluate expressions at a non-current stack level using a
+  -- non-coroutine (i.e. socket) interface.
+  if stack.pos > 1 then return end
   if buffer:name_of_style(buffer.style_at[pos]) ~= 'identifier' then return end
   local s = buffer:position_from_line(buffer:line_from_position(pos))
   local e = buffer:word_end_position(pos, true)
@@ -195,7 +212,18 @@ events.connect(events.DEBUGGER_INSPECT, function(lang, pos)
 end)
 
 -- Evaluate an arbitrary expression.
-events.connect(events.DEBUGGER_COMMAND,
-  function(lang, text) if lang == 'lua' then handle('exec ' .. text) end end)
+events.connect(events.DEBUGGER_COMMAND, function(lang, text)
+  if lang ~= 'lua' then return end
+  if stack.pos > 1 then
+    -- At this time, MobDebug cannot evaluate expressions at a non-current stack level using a
+    -- non-coroutine (i.e. socket) interface.
+    ui.dialogs.msgbox{
+      title = 'Error Evaluating', informative_text = 'Cannot evaluate in another stack frame.',
+      icon = 'gtk-dialog-error'
+    }
+    return
+  end
+  handle('exec ' .. text)
+end)
 
 return M
