@@ -81,7 +81,14 @@ end
 local stack -- from MobDebug
 
 -- Computes current debugger state.
-local function get_state()
+-- @param level Level to get the state of. 1 is for the current function, 2 for the caller,
+--   etc. The default value is 1.
+local function get_state(level)
+  -- Fetch stack frames.
+  client:settimeout(nil)
+  stack = mobdebug.handle('stack', client)
+  stack.pos = math.max(1, math.min(#stack, level or 1))
+  client:settimeout(0)
   -- Lookup frame.
   local frame = stack[stack.pos][1]
   local file, line = frame[2], frame[4]
@@ -114,12 +121,6 @@ local function handle_continuation(action)
       debugger.stop('lua')
       return
     end
-    -- Fetch stack frames.
-    client:settimeout(nil)
-    stack = mobdebug.handle('stack', client)
-    stack.pos = 1
-    client:settimeout(0)
-    -- Update the debugger state.
     local state = get_state()
     state.file, state.line = file, line -- override just to be safe
     debugger.update_state(state)
@@ -193,8 +194,7 @@ events.connect(events.DEBUGGER_WATCH_REMOVED,
 -- Set the current stack frame.
 events.connect(events.DEBUGGER_SET_FRAME, function(lang, level)
   if lang ~= 'lua' then return end
-  stack.pos = math.max(1, math.min(#stack, level or 1))
-  debugger.update_state(get_state())
+  debugger.update_state(get_state(level))
 end)
 
 -- Inspect the value of a symbol/variable at a given position.
@@ -236,7 +236,9 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
     }
     return
   end
-  handle('exec ' .. text)
+  handle('exec ' .. text, function()
+    debugger.update_state(get_state()) -- refresh any variables that changed
+  end)
 end)
 
 return M
