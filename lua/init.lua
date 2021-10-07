@@ -10,9 +10,17 @@ local M = {}
 -- which may not match the external Lua interpreter's version.
 -- @field logging (boolean)
 --   Whether or not to enable logging. Log messages are printed to stdout.
+-- @field show_ENV (boolean)
+--   Whether or not to show _ENV in the variable list.
+--   The default value is `false`.
+-- @field max_value_length (number)
+--   The rough maximum length of variable values displayed in the variable list.
+--   The default value is `100`.
 module('debugger.lua')]]
 
 M.logging = false
+M.show_ENV = false
+M.max_value_length = 100
 
 local debugger = require('debugger')
 local orig_path, orig_cpath = package.path, package.cpath
@@ -87,8 +95,13 @@ local function get_state()
   call_stack.pos = stack.pos
   -- Lookup variables (index 2) and upvalues (index 3) from the current frame.
   local variables = {}
-  for k, v in pairs(stack[call_stack.pos][2]) do variables[k] = v[2] end
-  for k, v in pairs(stack[call_stack.pos][3]) do variables[k] = v[2] end
+  for i = 2, 3 do
+    for k, v in pairs(stack[call_stack.pos][i]) do
+      if k == '_ENV' and not M.show_ENV then goto continue end
+      variables[k] = mobdebug.line(v[1], {maxlength = M.max_value_length})
+      ::continue::
+    end
+  end
   -- Return debugger state.
   return {file = file, line = line, call_stack = call_stack, variables = variables}
 end
