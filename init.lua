@@ -74,8 +74,9 @@ local M = {}
 --   * _`lang`_: The lexer name of the language to add a watch for.
 --   * _`expr`_: The expression or variable to watch, depending on what the debugger supports.
 --   * _`id`_: The expression's ID number.
+--   * _`no_break`_: Whether the debugger should not break when the watch's value changes.
 -- @field _G.events.DEBUGGER_WATCH_REMOVED (string)
---   Emitted when a breakpoint is removed.
+--   Emitted when a watch is removed.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
@@ -206,6 +207,8 @@ if not rawget(_L, 'Remove Breakpoint') then
   _L['Cannot Set Watch'] = 'Cannot Set Watch'
   _L['Set Watch'] = 'Set Watch'
   _L['Expression:'] = 'Expression:'
+  _L['Watch and Break'] = 'Watch and _Break'
+  _L['Watch Only'] = '_Watch Only'
   _L['Cannot Remove Watch'] = 'Cannot Remove Watch'
   _L['Remove Watch'] = 'Remove Watch'
   _L['Error Starting Debugger'] = 'Error Starting Debugger'
@@ -213,7 +216,7 @@ if not rawget(_L, 'Remove Breakpoint') then
   _L['[Call Stack]'] = '[Call Stack]'
   _L['Debugger started'] = 'Debugger started'
   _L['Debugger stopped'] = 'Debugger stopped'
-  _L['Variables'] = 'Variables'
+  _L['Variables and Watches'] = 'Variables and Watches'
   _L['Value'] = 'Value'
   _L['Call Stack'] = 'Call Stack'
   _L['Set Frame'] = '_Set Frame'
@@ -388,14 +391,17 @@ function M.toggle_breakpoint(file, line)
 end
 
 ---
--- Watches string expression *expr* for changes and breaks on each change.
+-- Watches string expression *expr* for changes and breaks on each change unless *no_break* is
+-- `true`.
 -- Emits a `DEBUGGER_WATCH_ADDED` event if the debugger is running, or queues up the event to
 -- run in [`debugger.start()`]().
 -- If the debugger is executing (e.g. not at a breakpoint), assumes a watch cannot be set and
 -- shows an error message.
 -- @param expr String expression to watch.
+-- @param no_break Whether to just watch the expression and not break on changes. The default
+--   value is `false`.
 -- @name set_watch
-function M.set_watch(expr)
+function M.set_watch(expr, no_break)
   local lang = get_lang()
   if states[lang] and states[lang].executing then
     notify_executing(_L['Cannot Set Watch'])
@@ -403,17 +409,19 @@ function M.set_watch(expr)
   end
   if not expr then
     local button
-    button, expr = ui.dialogs.standard_inputbox{
-      title = _L['Set Watch'], informative_text = _L['Expression:']
+    button, expr = ui.dialogs.inputbox{
+      title = _L['Set Watch'], informative_text = _L['Expression:'],
+      button1 = _L['Watch and Break'], button2 = _L['Watch Only'], button3 = _L['Cancel']
     }
-    if button ~= 1 or expr == '' then return end
+    if (button ~= 1 and button ~= 2) or expr == '' then return end
+    if button == 2 then no_break = true end
   end
   if not watches[lang] then watches[lang] = {n = 0} end
   local watch_exprs = watches[lang]
   watch_exprs.n = watch_exprs.n + 1
-  watch_exprs[watch_exprs.n], watch_exprs[expr] = expr, watch_exprs.n
+  watch_exprs[watch_exprs.n], watch_exprs[expr] = {expr = expr, no_break = no_break}, watch_exprs.n
   if not states[lang] then return end -- not debugging
-  events.emit(events.DEBUGGER_WATCH_ADDED, lang, expr, watch_exprs.n)
+  events.emit(events.DEBUGGER_WATCH_ADDED, lang, expr, watch_exprs.n, no_break)
 end
 
 ---
@@ -433,7 +441,7 @@ function M.remove_watch(id)
     local items = {}
     for i = 1, watches[lang].n do
       local watch = watches[lang][i]
-      if watch then items[#items + 1] = watch end
+      if watch then items[#items + 1] = watch.expr end
     end
     local button, expr = ui.dialogs.filteredlist{
       title = _L['Remove Watch'], columns = _L['Expression:'], items = items, string_output = true
@@ -443,7 +451,7 @@ function M.remove_watch(id)
   end
   local watch_exprs = watches[lang]
   if watch_exprs and watch_exprs[id] then
-    local expr = watch_exprs[id]
+    local expr = watch_exprs[id].expr
     watch_exprs[id], watch_exprs[expr] = nil, nil
     -- TODO: handle duplicate exprs
     if not states[lang] then return end -- not debugging
@@ -494,7 +502,7 @@ function M.start(lang, ...)
   if not watches[lang] then watches[lang] = {n = 0} end
   for i = 1, watches[lang].n do
     local watch = watches[lang][i]
-    if watch then events.emit(events.DEBUGGER_WATCH_ADDED, lang, watch, i) end
+    if watch then events.emit(events.DEBUGGER_WATCH_ADDED, lang, watch.expr, i, watch.no_break) end
   end
   if M.use_status_buffers then
     if #_VIEWS == 1 then
@@ -642,8 +650,8 @@ end
 -- @param state A table with four fields: `file`, `line`, `call_stack`, and `variables`. `file`
 --   and `line` indicate the debugger's current position. `call_stack` is a list of stack frames
 --   and a `pos` field whose value is the 1-based index of the current frame. `variables` is
---   an optional map of known variables to their values. The debugger can choose what kind of
---   variables make sense to put in the map.
+--   an optional map of known variables and watches to their values. The debugger can choose
+--   what kind of variables make sense to put in the map.
 -- @name update_state
 function M.update_state(state)
   assert(type(state) == 'table', 'state must be a table')
@@ -664,8 +672,8 @@ function M.update_state(state)
 end
 
 ---
--- Updates the buffer containing variables in the current stack frame.
--- Any variables that have changed since the last updated are marked.
+-- Updates the buffer containing variables and watches in the current stack frame.
+-- Any variables/watches that have changed since the last updated are marked.
 -- @name variables
 function M.variables()
   local lang = get_lang()
@@ -674,18 +682,21 @@ function M.variables()
   local buffer = debug_buffer(_L['[Variables]'])
   local prev_variables = {}
   for i = 1, buffer.line_count do
-    local name, value = buffer:get_line(i):match('^(%S+)%s*=%s*(.-)\r?\n$')
+    local name, value = buffer:get_line(i):match('^(.-)%s*=%s*(.-)\r?\n$')
     if name then prev_variables[name] = value end
   end
   -- TODO: save/restore view first visible line?
   buffer:marker_delete_all(-1)
-  buffer:set_text(_L['Variables'] .. '\n')
+  buffer:set_text(_L['Variables and Watches'] .. '\n')
   local names = {}
   for k in pairs(states[lang].variables) do names[#names + 1] = k end
   table.sort(names)
   for i = 1, #names do
     local name, value = names[i], states[lang].variables[names[i]]
     buffer:append_text(string.format('%s = %s\n', name, value))
+    if watches[lang] and watches[lang][name] then
+      buffer:marker_add(1 + i, textadept.bookmarks.MARK_BOOKMARK)
+    end
     if prev_variables[name] ~= nil and value ~= prev_variables[name] then
       buffer:marker_add(1 + i, MARK_BREAKPOINT) -- recycle this marker
     end

@@ -78,17 +78,27 @@ local function handle(action, callback)
   end
 end
 
-local stack -- from MobDebug
+-- Current stack from MobDebug
+-- @class table
+-- @name stack
+local stack
+
+-- Expressions to watch in the variables list.
+-- @class table
+-- @name watches
+local watches
 
 -- Computes current debugger state.
 -- @param level Level to get the state of. 1 is for the current function, 2 for the caller,
 --   etc. The default value is 1.
 local function get_state(level)
+  if not client then return nil end
   -- Fetch stack frames.
   client:settimeout(nil)
   stack = mobdebug.handle('stack', client)
-  stack.pos = math.max(1, math.min(#stack, level or 1))
   client:settimeout(0)
+  if not stack then return nil end -- debugger started, but not running yet
+  stack.pos = math.max(1, math.min(#stack, level or 1))
   -- Lookup frame.
   local frame = stack[stack.pos][1]
   local file, line = frame[2], frame[4]
@@ -109,8 +119,25 @@ local function get_state(level)
       ::continue::
     end
   end
+  -- Lookup watches if possible.
+  for _, expr in pairs(watches) do
+    if stack.pos == 1 then
+      client:settimeout(nil)
+      variables[expr] = mobdebug.handle('eval ' .. expr, client) or 'nil'
+      client:settimeout(0)
+    else
+      variables[expr] = '<unable to evaluate>'
+    end
+  end
   -- Return debugger state.
   return {file = file, line = line, call_stack = call_stack, variables = variables}
+end
+
+-- Helper function to update debugger state if possible.
+-- @param level Passed to `get_state()`.
+local function update_state(level)
+  local state = get_state(level)
+  if state then debugger.update_state(state) end
 end
 
 -- Handles continue, stop over, step into, and step out of events, and updates the debugger state.
@@ -151,6 +178,7 @@ events.connect(events.DEBUGGER_START, function(lang, filename, args, timeout)
   client = assert(server:accept(), 'failed to establish debug connection')
   client:settimeout(0) -- non-blocking reads
   handle('output stdout r')
+  watches = {}
   return true -- a debugger was started for this language
 end)
 
@@ -177,6 +205,7 @@ events.connect(events.DEBUGGER_STOP, function(lang)
   proc = nil
   server:close()
   server = nil
+  stack, watches = nil, nil
 end)
 
 -- Add and remove breakpoints and watches.
@@ -186,15 +215,24 @@ end)
 events.connect(events.DEBUGGER_BREAKPOINT_REMOVED, function(lang, file, line)
   if lang == 'lua' then handle(string.format('delb %s %d', file, line)) end
 end)
-events.connect(events.DEBUGGER_WATCH_ADDED,
-  function(lang, expr, id) if lang == 'lua' then handle('setw ' .. expr) end end)
-events.connect(events.DEBUGGER_WATCH_REMOVED,
-  function(lang, expr, id) if lang == 'lua' then handle('delw ' .. id) end end)
+events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, expr, id, no_break)
+  if lang ~= 'lua' then return end
+  handle('setw ' .. expr, function()
+    update_state() -- add watch to variables list
+    if no_break then handle('delw ' .. id) end -- eat the ID
+  end)
+  watches[id] = expr
+end)
+events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, expr, id)
+  if lang ~= 'lua' then return end
+  handle('delw ' .. id, update_state) -- then remove watch from variables list
+  watches[id] = nil
+end)
 
 -- Set the current stack frame.
 events.connect(events.DEBUGGER_SET_FRAME, function(lang, level)
   if lang ~= 'lua' then return end
-  debugger.update_state(get_state(level))
+  update_state(level)
 end)
 
 -- Inspect the value of a symbol/variable at a given position.
@@ -236,9 +274,7 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
     }
     return
   end
-  handle('exec ' .. text, function()
-    debugger.update_state(get_state()) -- refresh any variables that changed
-  end)
+  handle('exec ' .. text, update_state) -- then refresh any variables that changed
 end)
 
 return M

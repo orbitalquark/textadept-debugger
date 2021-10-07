@@ -41,15 +41,16 @@ end
 
 local function unescape(value) return (value:gsub('\\', '')) end
 
--- Fetches the current call stack and updates the debugger state.
+-- Computes the current debugger state.
 -- It is possible that the debugger is being forcibly paused without any file or line information
 -- in the current stack frame, so account for that.
-local function update_state()
+local function get_state()
+  if not proc then return nil end
   -- Fetch the current frame information.
   local output = run_command('-stack-info-frame')
   if output:find('^^error') then
     debugger.stop('ansi_c') -- program exited
-    return
+    return nil
   end
   local level = tonumber(output:match('level="(%d+)"') or 0)
   local file = output:match('fullname="(.-)"') or ''
@@ -70,8 +71,20 @@ local function update_state()
   for k, v in output:gmatch('name="(.-)".-value="(.-)"') do variables[k] = unescape(v) end
   output = run_command('-stack-list-locals --simple-values')
   for k, v in output:gmatch('name="(.-)".-value="(.-)"') do variables[k] = unescape(v) end
-  -- Update the debugger state.
-  debugger.update_state{file = file, line = line, call_stack = call_stack, variables = variables}
+  -- Fetch watches.
+  for id, expr in pairs(watchpoints) do
+    if type(id) ~= 'number' then goto continue end
+    local output = run_command('-data-evaluate-expression ' .. expr)
+    variables[expr] = output:match('value="(.*)"') or '<unable to evaluate>'
+    ::continue::
+  end
+  return {file = file, line = line, call_stack = call_stack, variables = variables}
+end
+
+-- Helper function to update debugger state if possible.
+local function update_state()
+  local state = get_state()
+  if state then debugger.update_state(state) end
 end
 
 -- Starts the gdb debugger.
@@ -153,11 +166,13 @@ events.connect(events.DEBUGGER_BREAKPOINT_REMOVED, function(lang, file, line)
   run_command('-break-delete ' .. id)
   breakpoints[id], breakpoints[location] = nil, nil
 end)
-events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, id)
+events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, id, no_break)
   if lang ~= 'gdb' then return end
   run_command('-break-watch ' .. var)
   watchpoints.n = math.max(breakpoints.n, watchpoints.n) + 1
   watchpoints[watchpoints.n], watchpoints[var] = var, watchpoints.n
+  if no_break then run_command('-break-delete ' .. watchpoints.n) end -- eat the ID
+  update_state() -- add watch to variables list
 end)
 events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var, id)
   if lang ~= 'gdb' then return end
@@ -165,6 +180,7 @@ events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var, id)
   run_command('-break-delete ' .. id)
   watchpoints[id], watchpoints[var] = nil, nil
   -- TODO: handle duplicate vars
+  update_state() -- remove watch from variables list
 end)
 
 -- Set the current stack frame.
