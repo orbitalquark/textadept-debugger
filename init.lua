@@ -669,6 +669,7 @@ function M.update_state(state)
   buffer:marker_delete_all(MARK_DEBUGLINE)
   buffer:marker_add(state.line, MARK_DEBUGLINE)
   buffer:goto_line(state.line)
+  textadept.history.record()
 end
 
 ---
