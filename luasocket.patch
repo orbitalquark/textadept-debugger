@@ -26,3 +26,20 @@
      int ret = lua_gettop(L) - amount - 1;
      return ret >= 0 ? ret : 0;
  }
+@@ -124,3 +124,7 @@
+     for (i = 0; mod[i].name; i++) mod[i].func(L);
+     return 1;
+ }
++
++LUASOCKET_API int luaopen_socket_coreosx(lua_State *L) {
++    return luaopen_socket_core(L);
++}
+--- a/luasocket/luasocket.h	2022-01-06 14:56:30.000000000 -0500
++++ b/luasocket/luasocket.h	2022-01-06 14:57:15.000000000 -0500
+@@ -25,5 +25,6 @@
+ * Initializes the library.
+ \*-------------------------------------------------------------------------*/
+ LUASOCKET_API int luaopen_socket_core(lua_State *L);
++LUASOCKET_API int luaopen_socket_coreosx(lua_State *L);
+ 
+ #endif /* LUASOCKET_H */
