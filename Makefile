@@ -1,4 +1,4 @@
-# Copyright 2007-2021 Mitchell. See LICENSE.
+# Copyright 2007-2022 Mitchell. See LICENSE.
 
 ta = ../..
 ta_src = $(ta)/src
