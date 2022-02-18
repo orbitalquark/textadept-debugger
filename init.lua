@@ -639,7 +639,10 @@ function M.stop(lang, ...)
     end
   end
   events.disconnect(events.UPDATE_UI, update_statusbar)
-  if M.use_status_buffers then ui.print(_L['Debugger stopped']) end
+  if M.use_status_buffers then
+    ui.print(_L['Debugger stopped'])
+    ui.goto_view(_VIEWS[1])
+  end
   ui.statusbar_text = _L['Debugger stopped']
 end
 
@@ -665,7 +668,9 @@ function M.update_state(state)
     M.variables()
     M.call_stack()
   end
-  if state.file ~= buffer.filename then ui.goto_file(state.file:iconv('UTF-8', _CHARSET)) end
+  if state.file ~= buffer.filename then
+    ui.goto_file(state.file:iconv('UTF-8', _CHARSET), false, view)
+  end
   buffer:marker_delete_all(MARK_DEBUGLINE)
   buffer:marker_add(state.line, MARK_DEBUGLINE)
   buffer:goto_line(state.line)
