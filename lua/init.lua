@@ -58,7 +58,7 @@ local function handle(action, callback)
     -- MobDebug stdout handler.
     handler = function(output)
       local orig_view = view
-      ui.print(output:find('\r?\n$') and output:match('^(.+)\r?\n') or output)
+      ui.print((output:gsub('\r?\n', '')))
       if view ~= orig_view then ui.goto_view(orig_view) end
     end
   }
@@ -140,7 +140,7 @@ local function update_state(level)
   if state then debugger.update_state(state) end
 end
 
--- Handles continue, stop over, step into, and step out of events, and updates the debugger state.
+-- Handles continue, step over, step into, and step out of events, and updates the debugger state.
 -- @param action MobDebug action to run. One of 'run', 'step', 'over', or 'out'.
 local function handle_continuation(action)
   handle(action, function(file, line)

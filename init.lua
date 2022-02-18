@@ -160,7 +160,7 @@ local M = {}
 --   Arguments:
 --
 --   * _`lang`_: The lexer name of the language being debugged.
---   * _`position`_: The buffer position of the symbol to inspect. The debugger responsible
+--   * _`position`_: The buffer position of the symbol to inspect. The debugger is responsible
 --     for identifying the symbol's name, as symbol characters vary from language to language.
 -- @field _G.events.DEBUGGER_COMMAND (string)
 --   Emitted when a debugger command should be run.
