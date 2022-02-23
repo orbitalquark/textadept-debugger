@@ -65,10 +65,11 @@ luadoc: init.lua
 
 # External dependencies.
 
-deps: luasocket lua/mobdebug.lua
+deps: luasocket lua/mobdebug.lua dkjson.lua
 
 luasocket_zip = v3.0-rc1.zip
 mobdebug_zip = 0.70.zip
+dkjson_tgz = dkjson-2.5.tar.gz
 
 $(luasocket_zip): ; wget https://github.com/diegonehab/luasocket/archive/$@
 luasocket: | $(luasocket_zip)
@@ -77,6 +78,8 @@ luasocket: | $(luasocket_zip)
 	patch -p1 < luasocket.patch
 $(mobdebug_zip): ; wget https://github.com/pkulchenko/MobDebug/archive/$@
 lua/mobdebug.lua: | $(mobdebug_zip) ; unzip -d $(dir $@) -j $| "*/src/$(notdir $@)"
+$(dkjson_tgz): ; wget http://dkolf.de/src/dkjson-lua.fsl/tarball/$@
+dkjson.lua: | $(dkjson_tgz) ; tar xzf $| && mv dkjson-*/$@ $@ && rm -r dkjson-*
 
 # Releases.
 
@@ -86,7 +89,7 @@ else
   archive = git archive HEAD --prefix $(1)/ | tar -xf -
 endif
 
-release: debugger | $(luasocket_zip) $(mobdebug_zip)
+release: debugger | $(luasocket_zip) $(mobdebug_zip) $(dkjson_tgz)
 	cp $| $<
 	make -C $< deps && make -C $< -j ta="../../.."
 	zip -r $<.zip $< -x "*.zip" "$</.git*" "$</luasocket*" && rm -r $<

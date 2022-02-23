@@ -880,4 +880,21 @@ events.connect(events.LEXER_LOADED, function(name)
   if package.searchpath('debugger.' .. name, package.path) then require('debugger.' .. name) end
 end)
 
+local orig_path, orig_cpath = package.path, package.cpath
+package.path = table.concat({
+  _HOME .. '/modules/debugger/lua/?.lua', _USERHOME .. '/modules/debugger/lua/?.lua', package.path
+}, ';')
+local so = not WIN32 and 'so' or 'dll'
+package.cpath = table.concat({
+  _HOME .. '/modules/debugger/lua/?.' .. so, _USERHOME .. '/modules/debugger/lua/?.' .. so,
+  package.cpath
+}, ';')
+---
+-- The LuaSocket module.
+-- @class table
+-- @name socket
+M.socket = require('socket')
+package.path, package.cpath = orig_path, orig_cpath
+package.loaded['socket'], package.loaded['socket.core'] = nil, nil -- clear
+
 return M
