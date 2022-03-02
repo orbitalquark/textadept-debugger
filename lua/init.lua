@@ -268,7 +268,7 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
     -- non-coroutine (i.e. socket) interface.
     ui.dialogs.msgbox{
       title = 'Error Evaluating', informative_text = 'Cannot evaluate in another stack frame.',
-      icon = 'gtk-dialog-error'
+      icon = 'dialog-error'
     }
     return
   end

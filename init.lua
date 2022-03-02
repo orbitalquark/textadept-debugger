@@ -297,8 +297,8 @@ end
 local function notify_executing(title)
   ui.dialogs.ok_msgbox{
     title = title, text = _L['Debugger is executing'],
-    informative_text = _L['Please wait until debugger is stopped or paused'],
-    icon = 'gtk-dialog-error', no_cancel = true
+    informative_text = _L['Please wait until debugger is stopped or paused'], icon = 'dialog-error',
+    no_cancel = true
   }
 end
 
@@ -482,8 +482,7 @@ function M.start(lang, ...)
   local ok, errmsg = pcall(events.emit, events.DEBUGGER_START, lang, ...)
   if not ok then
     ui.dialogs.msgbox{
-      title = _L['Error Starting Debugger'], text = errmsg, icon = 'gtk-dialog-error',
-      no_cancel = true
+      title = _L['Error Starting Debugger'], text = errmsg, icon = 'dialog-error', no_cancel = true
     }
     return
   elseif ok and not errmsg then
