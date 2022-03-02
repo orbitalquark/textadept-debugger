@@ -43,3 +43,23 @@
 +LUASOCKET_API int luaopen_socket_coreosx(lua_State *L);
  
  #endif /* LUASOCKET_H */
+--- a/luasocket/buffer.c	2022-03-02 15:27:17.369303209 -0500
++++ b/luasocket/buffer.c	2022-03-02 15:28:24.992010340 -0500
+@@ -107,13 +107,16 @@
+ * object:receive() interface
+ \*-------------------------------------------------------------------------*/
+ int buffer_meth_receive(lua_State *L, p_buffer buf) {
+-    int err = IO_DONE, top = lua_gettop(L);
++    int err = IO_DONE, top;
+     luaL_Buffer b;
+     size_t size;
+     const char *part = luaL_optlstring(L, 3, "", &size);
+ #ifdef LUASOCKET_DEBUG
+     p_timeout tm = timeout_markstart(buf->tm);
+ #endif
++    /* make sure we don't confuse buffer stuff with arguments */
++    lua_settop(L, 3);
++    top = lua_gettop(L);
+     /* initialize buffer with optional extra prefix 
+      * (useful for concatenating previous partial results) */
+     luaL_buffinit(L, &b);
