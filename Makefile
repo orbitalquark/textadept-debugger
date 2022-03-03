@@ -14,7 +14,8 @@ clean: ; rm -f luasocket/*.o lua/socket/*.so lua/socket/*.dll
 
 # Platform objects.
 
-CROSS_WIN = i686-w64-mingw32-
+CROSS_WIN = x86_64-w64-mingw32-gcc-posix
+DLLTOOL = x86_64-w64-mingw32-dlltool
 CROSS_OSX = x86_64-apple-darwin17-cc
 
 luasocket_objs = $(addprefix luasocket/, luasocket.o timeout.o buffer.o io.o auxiliar.o options.o \
@@ -25,9 +26,9 @@ luasocket_osx_objs = $(addsuffix -osx.o, $(basename $(luasocket_objs)))
 lua/socket/core.so: $(luasocket_objs)
 	$(CC) -shared $(CFLAGS) -o $@ $^ $(LDFLAGS)
 lua/socket/core.dll: $(luasocket_win_objs) luasocket/lua.la
-	$(CROSS_WIN)$(CC) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o $@ $^ $(LDFLAGS) -lws2_32
+	$(CROSS_WIN) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o $@ $^ $(LDFLAGS) -lws2_32
 lua/socket/core-curses.dll: $(luasocket_win_objs) luasocket/lua-curses.la
-	$(CROSS_WIN)$(CC) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o $@ $^ $(LDFLAGS) -lws2_32
+	$(CROSS_WIN) -shared -static-libgcc -static-libstdc++ $(CFLAGS) -o $@ $^ $(LDFLAGS) -lws2_32
 lua/socket/coreosx.so: $(luasocket_osx_objs)
 	$(CROSS_OSX) -shared $(CFLAGS) -undefined dynamic_lookup -o $@ $^
 
@@ -35,7 +36,7 @@ $(luasocket_objs): %.o: %.c
 	$(CC) -c $(CFLAGS) $(luasocket_flags) -DLUASOCKET_API='__attribute__((visibility("default")))' \
 		$< -o $@
 $(luasocket_win_objs): %-win.o: %.c
-	$(CROSS_WIN)$(CC) -c $(CFLAGS) $(luasocket_flags) -DLUASOCKET_INET_PTON -DWINVER=0x0501 \
+	$(CROSS_WIN) -c $(CFLAGS) $(luasocket_flags) -DLUASOCKET_INET_PTON -DWINVER=0x0501 \
 		-DLUASOCKET_API='__declspec(dllexport)' $< -o $@
 $(luasocket_osx_objs): %-osx.o: %.c
 	$(CROSS_OSX) -c $(CFLAGS) $(luasocket_flags) -DUNIX_HAS_SUN_LEN \
@@ -44,12 +45,11 @@ $(luasocket_osx_objs): %-osx.o: %.c
 luasocket/lua.def:
 	echo LIBRARY \"textadept.exe\" > $@ && echo EXPORTS >> $@
 	grep -v "^#" $(ta_src)/lua.sym >> $@
-luasocket/lua.la: luasocket/lua.def ; $(CROSS_WIN)dlltool -d $< -l $@
+luasocket/lua.la: luasocket/lua.def ; $(DLLTOOL) -d $< -l $@
 luasocket/lua-curses.def:
 	echo LIBRARY \"textadept-curses.exe\" > $@ && echo EXPORTS >> $@
 	grep -v "^#" $(ta_src)/lua.sym >> $@
-luasocket/lua-curses.la: luasocket/lua-curses.def
-	$(CROSS_WIN)dlltool -d $< -l $@
+luasocket/lua-curses.la: luasocket/lua-curses.def ; $(DLLTOOL) -d $< -l $@
 
 # Documentation.
 
