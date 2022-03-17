@@ -31,6 +31,13 @@ Textadept can debug another instance of [itself][1].
 [LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
 [1]: https://github.com/orbitalquark/.textadept/blob/4c936361d45fa8f99e16df0d71fc9306bee216bc/init.lua#L179
 
+## Compiling
+
+Releases include binaries, so building this modules should not be necessary. If you want to
+build manually, run `make deps` followed by `make`. This assumes the module is installed
+in Textadept's *modules/* directory. If it is not (e.g. it is in your `_USERHOME`), run
+`make ta=/path/to/textadept`.
+
 ## Key Bindings
 
 Windows, Linux, BSD | macOS | Terminal | Command
@@ -109,7 +116,7 @@ Emitted when a symbol should be inspected.
   Arguments:
 
   * _`lang`_: The lexer name of the language being debugged.
-  * _`position`_: The buffer position of the symbol to inspect. The debugger responsible
+  * _`position`_: The buffer position of the symbol to inspect. The debugger is responsible
     for identifying the symbol's name, as symbol characters vary from language to language.
 
 <a id="events.DEBUGGER_PAUSE"></a>
@@ -210,17 +217,23 @@ Emitted when a watch is added.
   * _`lang`_: The lexer name of the language to add a watch for.
   * _`expr`_: The expression or variable to watch, depending on what the debugger supports.
   * _`id`_: The expression's ID number.
+  * _`no_break`_: Whether the debugger should not break when the watch's value changes.
 
 <a id="events.DEBUGGER_WATCH_REMOVED"></a>
 ### `events.DEBUGGER_WATCH_REMOVED` (string)
 
-Emitted when a breakpoint is removed.
+Emitted when a watch is removed.
   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
   Arguments:
 
   * _`lang`_: The lexer name of the language being debugged.
   * _`expr`_: The expression to stop watching.
   * _`id`_: The expression's ID number.
+
+<a id="debugger.use_status_buffers"></a>
+### `debugger.use_status_buffers` (boolean)
+
+Whether or not to use debug status buffers like variables, call stack, etc.
 
 
 ## Functions defined by `debugger`
@@ -234,6 +247,11 @@ The result (if any) is not returned, but likely printed to the message buffer.
 Parameters:
 
 * *`text`*: String text to evaluate.
+
+<a id="debugger.call_stack"></a>
+### `debugger.call_stack`()
+
+Updates the buffer containing the call stack.
 
 <a id="debugger.continue"></a>
 ### `debugger.continue`(*lang, ...*)
@@ -317,9 +335,10 @@ Parameters:
 * *`level`*: Optional 1-based stack frame index to switch to.
 
 <a id="debugger.set_watch"></a>
-### `debugger.set_watch`(*expr*)
+### `debugger.set_watch`(*expr, no\_break*)
 
-Watches string expression *expr* for changes and breaks on each change.
+Watches string expression *expr* for changes and breaks on each change unless *no_break* is
+`true`.
 Emits a `DEBUGGER_WATCH_ADDED` event if the debugger is running, or queues up the event to
 run in [`debugger.start()`](#debugger.start).
 If the debugger is executing (e.g. not at a breakpoint), assumes a watch cannot be set and
@@ -328,6 +347,8 @@ shows an error message.
 Parameters:
 
 * *`expr`*: String expression to watch.
+* *`no_break`*: Whether to just watch the expression and not break on changes. The default
+  value is `false`.
 
 <a id="debugger.start"></a>
 ### `debugger.start`(*lang, ...*)
@@ -426,13 +447,14 @@ Parameters:
 * *`state`*: A table with four fields: `file`, `line`, `call_stack`, and `variables`. `file`
   and `line` indicate the debugger's current position. `call_stack` is a list of stack frames
   and a `pos` field whose value is the 1-based index of the current frame. `variables` is
-  an optional map of known variables to their values. The debugger can choose what kind of
-  variables make sense to put in the map.
+  an optional map of known variables and watches to their values. The debugger can choose
+  what kind of variables make sense to put in the map.
 
 <a id="debugger.variables"></a>
 ### `debugger.variables`()
 
-Displays a dialog with variables in the current stack frame.
+Updates the buffer containing variables and watches in the current stack frame.
+Any variables/watches that have changed since the last updated are marked.
 
 
 ## Tables defined by `debugger`
@@ -450,5 +472,10 @@ it debugs and an alias is not necessary.
 
 Map of project root directories to functions that return the language of the debugger to
 start followed by the arguments to pass to that debugger's `DEBUGGER_START` event handler.
+
+<a id="debugger.socket"></a>
+### `debugger.socket`
+
+The LuaSocket module.
 
 ---
