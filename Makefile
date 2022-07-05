@@ -7,6 +7,7 @@ ta_lua = $(ta_src)/lua/src
 CC = gcc
 CFLAGS = -std=gnu99 -pedantic -fPIC -Wall -I$(ta_lua) -fvisibility=hidden
 LDFLAGS = -Wl,--retain-symbols-file -Wl,$(ta_src)/lua.sym
+WGET = wget -O $@
 luasocket_flags = -DLUASOCKET_NODEBUG -DLUA_NOCOMPAT_MODULE
 
 all: $(addprefix lua/socket/, core.so core.dll core-curses.dll coreosx.so)
@@ -71,14 +72,14 @@ luasocket_zip = v3.0-rc1.zip
 mobdebug_zip = 0.70.zip
 dkjson_tgz = dkjson-2.5.tar.gz
 
-$(luasocket_zip): ; wget https://github.com/diegonehab/luasocket/archive/$@
+$(luasocket_zip): ; $(WGET) https://github.com/diegonehab/luasocket/archive/$@
 luasocket: | $(luasocket_zip)
 	unzip -d $@ -j $| "*/src/*"
 	mv luasocket/socket.lua lua
 	patch -p1 < luasocket.patch
-$(mobdebug_zip): ; wget https://github.com/pkulchenko/MobDebug/archive/$@
+$(mobdebug_zip): ; $(WGET) https://github.com/pkulchenko/MobDebug/archive/$@
 lua/mobdebug.lua: | $(mobdebug_zip) ; unzip -d $(dir $@) -j $| "*/src/$(notdir $@)"
-$(dkjson_tgz): ; wget http://dkolf.de/src/dkjson-lua.fsl/tarball/$@
+$(dkjson_tgz): ; $(WGET) http://dkolf.de/src/dkjson-lua.fsl/tarball/$@
 dkjson.lua: | $(dkjson_tgz) ; tar xzf $| && mv dkjson-*/$@ $@ && rm -r dkjson-*
 
 # Releases.
