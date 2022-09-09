@@ -288,7 +288,7 @@ local states = {}
 -- @param lang Optional lexer language to get the debugger module for.
 -- @see aliases
 local function get_lang(lang)
-  if not lang then lang = buffer:get_lexer() end
+  if not lang then lang = buffer.lexer_language end
   return M.aliases[lang] or lang
 end
 
