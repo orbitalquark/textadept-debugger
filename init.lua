@@ -514,7 +514,7 @@ function M.start(lang, ...)
     if #_VIEWS == 1 then
       -- Split into 3 lower views: message buffer, variables, call stack.
       -- Note if `ui.tabs` is true, the message buffer will be in a separate tab, not split view.
-      ui.print(_L['Debugger started'])
+      ui.output(_L['Debugger started'], '\n')
       view:split(#_VIEWS > 1)
       view.size = ui.size[1] // #_VIEWS
       view:goto_buffer(debug_buffer(_L['[Variables]']))
@@ -646,7 +646,7 @@ function M.stop(lang, ...)
   end
   events.disconnect(events.UPDATE_UI, update_statusbar)
   if M.use_status_buffers then
-    ui.print(_L['Debugger stopped'])
+    ui.output(_L['Debugger stopped'], '\n')
     ui.goto_view(_VIEWS[1])
   end
   ui.statusbar_text = _L['Debugger stopped']
@@ -735,6 +735,9 @@ function M.call_stack()
   buffer:set_save_point()
 end
 
+-- Returns whether or not the given buffer is the call stack buffer.
+local function is_cs_buf(buf) return buffer._type == _L['[Call Stack]'] end
+
 ---
 -- Prompts the user to select a stack frame to switch to from the current debugger call stack,
 -- unless the debugger is executing (e.g. not at a breakpoint).
@@ -742,7 +745,7 @@ end
 -- @param level Optional 1-based stack frame index to switch to.
 -- @name set_frame
 function M.set_frame(level)
-  if buffer._type == _L['[Call Stack]'] then ui.goto_view(buffer._debug_view) end
+  if is_cs_buf(buffer) then ui.goto_view(buffer._debug_view) end
   local lang = get_lang()
   if not states[lang] or states[lang].executing then return end
   local call_stack = states[lang].call_stack
@@ -825,7 +828,6 @@ events.connect(events.RESET_AFTER, function(persist)
 end)
 
 -- Set call stack frame on Enter or double-click.
-local function is_cs_buf(buf) return buf._type == _L['[Call Stack]'] end
 events.connect(events.KEYPRESS, function(code)
   if keys.KEYSYMS[code] ~= '\n' or not is_cs_buf(buffer) then return end
   M.set_frame(buffer:line_from_position(buffer.current_pos) - 1)
@@ -859,7 +861,7 @@ for i = 1, #menubar do
       -- when run from menu directly.
       local lang = get_lang()
       if not states[lang] or states[lang].executing then return end
-      ui.command_entry.run(M.evaluate, 'lua')
+      ui.command_entry.run(_L['Expression:'], M.evaluate, 'lua')
     end},
     {''},
     {_L['Toggle Breakpoint'], M.toggle_breakpoint},

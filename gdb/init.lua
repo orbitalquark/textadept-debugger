@@ -223,7 +223,7 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
   local value = output:match('value="(.*)"')
   if value then
     local orig_view = view
-    ui.print(unescape(value))
+    ui.output(unescape(value), '\n')
     ui.goto_view(orig_view)
   end
 end)

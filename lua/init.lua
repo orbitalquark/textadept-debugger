@@ -56,7 +56,7 @@ local function handle(action, callback)
     -- MobDebug stdout handler.
     handler = function(output)
       local orig_view = view
-      ui.print((output:gsub('\r?\n', '')))
+      ui.output(output)
       if view ~= orig_view then ui.goto_view(orig_view) end
     end
   }
@@ -171,7 +171,7 @@ events.connect(events.DEBUGGER_START, function(lang, filename, args, timeout)
       [[-e "require('mobdebug').start()"]], string.format('%q', filename), args
     }
     local cmd = textadept.run.run_commands.lua:gsub('([\'"]?)%%f%1', table.concat(arg, ' '))
-    proc = assert(os.spawn(cmd, filename:match('^.+[/\\]'), ui.print, ui.print))
+    proc = assert(os.spawn(cmd, filename:match('^.+[/\\]'), ui.output, ui.output))
   end
   client = assert(server:accept(), 'failed to establish debug connection')
   client:settimeout(0) -- non-blocking reads

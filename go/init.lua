@@ -132,7 +132,7 @@ events.connect(events.DEBUGGER_START, function(lang, root, package, args)
     local args = {
       dlv_cmd:format(command, package, args or ''), root, function(output)
         local orig_view = view
-        ui.print((output:gsub('\r?\n$', '')))
+        ui.output(output)
         if view ~= orig_view then ui.goto_view(orig_view) end
       end
     }
@@ -248,7 +248,7 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
   local result = request('Eval', {Scope = {GoroutineID = -1, Frame = 0}, Expr = text})
   if not result then return end
   local orig_view = view
-  ui.print(pretty_print(result.Variable, true))
+  ui.output(pretty_print(result.Variable, true), '\n')
   ui.goto_view(orig_view)
 end)
 
