@@ -40,7 +40,7 @@ module is installed in Textadept's *modules/* directory. If it is not (e.g. it i
 
 ## Key Bindings
 
-Windows, Linux, BSD | macOS | Terminal | Command
+Windows and Linux | macOS | Terminal | Command
 -|-|-|-
 **Debug**| | |
 F5 | F5 | F5 | Start debugging

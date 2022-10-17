@@ -266,8 +266,8 @@ events.connect(events.DEBUGGER_COMMAND, function(lang, text)
   if stack.pos > 1 then
     -- At this time, MobDebug cannot evaluate expressions at a non-current stack level using a
     -- non-coroutine (i.e. socket) interface.
-    ui.dialogs.msgbox{
-      title = 'Error Evaluating', informative_text = 'Cannot evaluate in another stack frame.',
+    ui.dialogs.message{
+      title = 'Error Evaluating', text = 'Cannot evaluate in another stack frame.',
       icon = 'dialog-error'
     }
     return

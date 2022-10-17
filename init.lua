@@ -44,7 +44,7 @@ local M = {}
 --
 -- ### Key Bindings
 --
--- Windows, Linux, BSD | macOS | Terminal | Command
+-- Windows and Linux | macOS | Terminal | Command
 -- -|-|-|-
 -- **Debug**| | |
 -- F5 | F5 | F5 | Start debugging
@@ -212,7 +212,7 @@ if not rawget(_L, 'Remove Breakpoint') then
   _L['Remove Breakpoint'] = 'Remove Breakpoint'
   _L['Breakpoint:'] = 'Breakpoint:'
   _L['Cannot Set Watch'] = 'Cannot Set Watch'
-  _L['Set Watch'] = 'Set Watch'
+  _L['Set Watch Expression:'] = 'Set Watch Expression:'
   _L['Expression:'] = 'Expression:'
   _L['Watch and Break'] = 'Watch and _Break'
   _L['Watch Only'] = '_Watch Only'
@@ -302,10 +302,9 @@ end
 -- Notifies via a dialog that an action cannot be performed because the debugger is currently
 -- executing.
 local function notify_executing(title)
-  ui.dialogs.ok_msgbox{
-    title = title, text = _L['Debugger is executing'],
-    informative_text = _L['Please wait until debugger is stopped or paused'], icon = 'dialog-error',
-    no_cancel = true
+  ui.dialogs.message{
+    title = title, text = string.format('%s\n%s', _L['Debugger is executing'],
+      _L['Please wait until debugger is stopped or paused']), icon = 'dialog-error'
   }
 end
 
@@ -355,13 +354,11 @@ function M.remove_breakpoint(file, line)
       ::continue::
     end
     table.sort(items)
-    local button
-    button, items = ui.dialogs.filteredlist{
-      title = _L['Remove Breakpoint'], columns = _L['Breakpoint:'], items = items,
-      string_output = true, select_multiple = true
+    local selected = ui.dialogs.list{
+      title = _L['Remove Breakpoint'], items = items, multiple = true
     }
-    if button ~= _L['OK'] or not items then return end
-    for i = 1, #items do
+    if not selected then return end
+    for _, i in ipairs(selected) do
       file, line = items[i]:match('^(.+):(%d+)$')
       M.remove_breakpoint(file, tonumber(line))
     end
@@ -416,9 +413,9 @@ function M.set_watch(expr, no_break)
   end
   if not expr then
     local button
-    button, expr = ui.dialogs.inputbox{
-      title = _L['Set Watch'], informative_text = _L['Expression:'],
-      button1 = _L['Watch and Break'], button2 = _L['Watch Only'], button3 = _L['Cancel']
+    expr, button = ui.dialogs.input{
+      title = _L['Set Watch Expression:'], button1 = _L['Watch and Break'],
+      button2 = _L['Watch Only'], button3 = _L['Cancel'], return_button = true
     }
     if (button ~= 1 and button ~= 2) or expr == '' then return end
     if button == 2 then no_break = true end
@@ -450,11 +447,9 @@ function M.remove_watch(id)
       local watch = watches[lang][i]
       if watch then items[#items + 1] = watch.expr end
     end
-    local button, expr = ui.dialogs.filteredlist{
-      title = _L['Remove Watch'], columns = _L['Expression:'], items = items, string_output = true
-    }
-    if button ~= _L['OK'] or not expr then return end
-    id = watches[lang][expr] -- TODO: handle duplicates
+    local i = ui.dialogs.list{title = _L['Remove Watch'], items = items}
+    if not i then return end
+    id = watches[lang][items[i]] -- TODO: handle duplicates
   end
   local watch_exprs = watches[lang]
   if watch_exprs and watch_exprs[id] then
@@ -488,9 +483,7 @@ function M.start(lang, ...)
   if states[lang] then return end -- already debugging
   local ok, errmsg = pcall(events.emit, events.DEBUGGER_START, lang, ...)
   if not ok then
-    ui.dialogs.msgbox{
-      title = _L['Error Starting Debugger'], text = errmsg, icon = 'dialog-error', no_cancel = true
-    }
+    ui.dialogs.message{title = _L['Error Starting Debugger'], text = errmsg, icon = 'dialog-error'}
     return
   elseif ok and not errmsg then
     return false -- no debugger for this language
@@ -751,9 +744,9 @@ function M.set_frame(level)
   local call_stack = states[lang].call_stack
   if not assert_type(level, 'number/nil', 1) then
     local button
-    button, level = ui.dialogs.dropdown{
+    level, button = ui.dialogs.list{
       title = _L['Call Stack'], items = call_stack, select = call_stack.pos or 1,
-      button1 = _L['OK'], button2 = _L['Set Frame']
+      button1 = _L['OK'], button2 = _L['Set Frame'], return_button = true
     }
     if button ~= 2 then return end
   elseif level < 1 or level > #call_stack then
