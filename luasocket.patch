@@ -1,5 +1,5 @@
---- a/lua/socket.lua	2021-02-14 16:11:00.198125139 -0500
-+++ b/lua/socket.lua	2021-02-14 16:12:20.958616941 -0500
+--- a/src/socket.lua	2021-02-14 16:11:00.198125139 -0500
++++ b/src/socket.lua	2021-02-14 16:12:20.958616941 -0500
 @@ -9,7 +9,13 @@
  local base = _G
  local string = require("string")
@@ -15,8 +15,8 @@
  
  local _M = socket
  
---- a/luasocket/luasocket.c	2021-02-14 17:09:14.466231703 -0500
-+++ b/luasocket/luasocket.c	2021-02-14 17:09:31.922343447 -0500
+--- a/src/luasocket.c	2021-02-14 17:09:14.466231703 -0500
++++ b/src/luasocket.c	2021-02-14 17:09:31.922343447 -0500
 @@ -64,7 +64,7 @@
  * Skip a few arguments
  \*-------------------------------------------------------------------------*/
@@ -34,8 +34,21 @@
 +LUASOCKET_API int luaopen_socket_coreosx(lua_State *L) {
 +    return luaopen_socket_core(L);
 +}
---- a/luasocket/luasocket.h	2022-01-06 14:56:30.000000000 -0500
-+++ b/luasocket/luasocket.h	2022-01-06 14:57:15.000000000 -0500
+--- a/src/luasocket.h	2022-01-06 14:56:30.000000000 -0500
++++ b/src/luasocket.h	2022-01-06 14:57:15.000000000 -0500
+@@ -18,7 +18,11 @@
+ * This macro prefixes all exported API functions
+ \*-------------------------------------------------------------------------*/
+ #ifndef LUASOCKET_API
+-#define LUASOCKET_API extern
++#if !_WIN32
++#define LUASOCKET_API __attribute__((visibility("default")))
++#else
++#define LUASOCKET_API __declspec(dllexport)
++#endif
+ #endif
+ 
+ /*-------------------------------------------------------------------------*\
 @@ -25,5 +25,6 @@
  * Initializes the library.
  \*-------------------------------------------------------------------------*/
@@ -43,8 +56,8 @@
 +LUASOCKET_API int luaopen_socket_coreosx(lua_State *L);
  
  #endif /* LUASOCKET_H */
---- a/luasocket/buffer.c	2022-03-02 15:27:17.369303209 -0500
-+++ b/luasocket/buffer.c	2022-03-02 15:28:24.992010340 -0500
+--- a/src/buffer.c	2022-03-02 15:27:17.369303209 -0500
++++ b/src/buffer.c	2022-03-02 15:28:24.992010340 -0500
 @@ -107,13 +107,16 @@
  * object:receive() interface
  \*-------------------------------------------------------------------------*/

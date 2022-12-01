@@ -5,45 +5,58 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-20.04
-    container: ghcr.io/orbitalquark/textadept-build:v2.0
+    strategy:
+      matrix:
+        os: [ubuntu-20.04, windows-2019, macOS-11]
+    runs-on: ${{ matrix.os }}
     steps:
-      - name: Checkout textadept
-        uses: actions/checkout@v2
-        with:
-          repository: orbitalquark/textadept
-          path: textadept
+      - name: Checkout
+        uses: actions/checkout@v3
       - name: Checkout textadept-build dependencies
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: orbitalquark/textadept-build
           path: textadept-build
-      - name: Checkout textadept-debugger module
-        uses: actions/checkout@v2
-        with:
-          path: textadept/modules/debugger
       - name: Build
         shell: bash
         run: |
-          mv textadept-build/* textadept/src && make -C textadept/src lua
-          make -C textadept/modules/debugger release
+          mkdir -p build/_deps && mv textadept-build/* build/_deps && rm -r textadept-build
+          cmake -S . -B build
+          cmake --build build --config Release -j
+          cmake --install build --config Release
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: artifacts
-          path: textadept/modules/debugger/debugger.zip
+          path: |
+            lua/socket/*.so
+            lua/socket/*.dll
   release:
     runs-on: ubuntu-latest
     needs: build
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: artifacts
+      - name: Package
+        shell: bash
+        run: |
+          cmake -S . -B build # fetch dependent Lua files
+          git archive HEAD --prefix debugger/ | tar -xf -
+          mv *.so *.dll debugger/lua/socket/
+          mv build/_deps/dkjson-src/dkjson.lua debugger
+          mv build/_deps/lua_socket-src/src/socket.lua debugger/lua
+          mv build/_deps/mobdebug-src/src/mobdebug.lua debugger/lua
+          zip -r debugger.zip debugger
       - name: Tag
         run: |
           git tag latest
           git push -f origin latest
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: artifacts
       - name: Create release

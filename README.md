@@ -34,9 +34,11 @@ Textadept can debug another instance of [itself][1].
 ## Compiling
 
 Releases include binaries, so building this modules should not be necessary. If you want
-to build manually, run `make deps` followed by `make lua/socket/core.so`. This assumes the
-module is installed in Textadept's *modules/* directory. If it is not (e.g. it is in your
-`_USERHOME`), run `make ta=/path/to/textadept lua/socket/core.so`.
+to build manually, use CMake. For example:
+
+    cmake -S . -B build_dir
+    cmake --build build_dir
+    cmake --install build_dir
 
 ## Key Bindings
 
