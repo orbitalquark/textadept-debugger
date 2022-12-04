@@ -41,7 +41,6 @@ if(NOT WIN32)
 else()
   list(FILTER lua_socket_src EXCLUDE REGEX "usocket\.c$")
 endif()
-message(ERROR ${lua_socket_src})
 if(WIN32)
   # On Windows, DLLs cannot do dynamic lookup. They need symbols to link to at build time.
   # Rather than fetching a Textadept build and creating separate DLLs linked to textadept.lib and
@@ -73,6 +72,13 @@ endif()
 install(FILES ${lua_socket_SOURCE_DIR}/src/socket.lua ${mobdebug_SOURCE_DIR}/src/mobdebug.lua
   DESTINATION ${src}/lua)
 install(FILES ${dkjson_SOURCE_DIR}/dkjson.lua DESTINATION ${src})
+if(NOT (WIN32 OR APPLE))
+  include(GNUInstallDirs)
+  set(module_dir ${CMAKE_INSTALL_FULL_DATADIR}/textadept/modules/debugger)
+  install(CODE "file(MAKE_DIRECTORY ${module_dir})")
+  install(FILES init.lua dkjson.lua DESTINATION ${module_dir})
+  install(DIRECTORY gdb go lua DESTINATION ${module_dir})
+endif()
 
 # Documentation.
 get_filename_component(ta_dir ${src}/../../ ABSOLUTE)
