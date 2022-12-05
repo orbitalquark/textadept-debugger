@@ -1,16 +1,12 @@
 --- a/src/socket.lua	2021-02-14 16:11:00.198125139 -0500
 +++ b/src/socket.lua	2021-02-14 16:12:20.958616941 -0500
-@@ -9,7 +9,13 @@
+@@ -9,7 +9,9 @@
  local base = _G
  local string = require("string")
  local math = require("math")
 -local socket = require("socket.core")
 +local lib = 'socket.core'
-+if OSX then
-+  lib = lib .. 'osx'
-+elseif WIN32 and CURSES then
-+  lib = lib .. '-curses'
-+end
++if OSX then lib = lib .. 'osx' end
 +local socket = require(lib)
  
  local _M = socket
