@@ -823,8 +823,8 @@ events.connect(events.RESET_AFTER, function(persist)
 end)
 
 -- Set call stack frame on Enter or double-click.
-events.connect(events.KEYPRESS, function(code)
-  if keys.KEYSYMS[code] ~= '\n' or not is_cs_buf(buffer) then return end
+events.connect(events.KEYPRESS, function(key)
+  if key ~= '\n' or not is_cs_buf(buffer) then return end
   M.set_frame(buffer:line_from_position(buffer.current_pos) - 1)
   return true
 end)
