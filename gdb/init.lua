@@ -2,12 +2,11 @@
 
 local M = {}
 
---[[ This comment is for LuaDoc.
 ---
 -- Language debugging support for C and C++.
 -- @field logging (boolean)
 --   Whether or not to enable logging. Log messages are printed to stdout.
-module('debugger.ansi_c')]]
+-- @module debugger.ansi_c
 
 M.logging = false
 

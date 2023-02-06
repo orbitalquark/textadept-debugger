@@ -2,7 +2,6 @@
 
 local M = {}
 
---[[ This comment is for LuaDoc.
 ---
 -- Language debugging support for Textadept.
 --
@@ -63,35 +62,35 @@ local M = {}
 --   Breakpoints added while the debugger is not running are queued up until the debugger starts.
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language to add a breakpoint for.
---   * _`filename`_: The filename to add a breakpoint in.
---   * _`line`_: The 1-based line number to break on.
+--   - *lang*: The lexer name of the language to add a breakpoint for.
+--   - *filename*: The filename to add a breakpoint in.
+--   - *line*: The 1-based line number to break on.
 -- @field _G.events.DEBUGGER_BREAKPOINT_REMOVED (string)
 --   Emitted when a breakpoint is removed.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`filename`_: The filename to remove a breakpoint from.
---   * _`line`_: The 1-based line number to stop breaking on.
+--   - *lang*: The lexer name of the language being debugged.
+--   - *filename*: The filename to remove a breakpoint from.
+--   - *line*: The 1-based line number to stop breaking on.
 -- @field _G.events.DEBUGGER_WATCH_ADDED (string)
 --   Emitted when a watch is added.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint). Watches
 --   added while the debugger is not running are queued up until the debugger starts.
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language to add a watch for.
---   * _`expr`_: The expression or variable to watch, depending on what the debugger supports.
---   * _`id`_: The expression's ID number.
---   * _`no_break`_: Whether the debugger should not break when the watch's value changes.
+--   - *lang*: The lexer name of the language to add a watch for.
+--   - *expr*: The expression or variable to watch, depending on what the debugger supports.
+--   - *id*: The expression's ID number.
+--   - *no_break*: Whether the debugger should not break when the watch's value changes.
 -- @field _G.events.DEBUGGER_WATCH_REMOVED (string)
 --   Emitted when a watch is removed.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`expr`_: The expression to stop watching.
---   * _`id`_: The expression's ID number.
+--   - *lang*: The lexer name of the language being debugged.
+--   - *expr*: The expression to stop watching.
+--   - *id*: The expression's ID number.
 -- @field _G.events.DEBUGGER_START (string)
 --   Emitted when a debugger should be started.
 --   The debugger should not start executing yet, as there will likely be incoming breakpoint
@@ -101,36 +100,36 @@ local M = {}
 --   return `false` (they can return `nil`).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language to start debugging.
---   * _`...`_: Any arguments passed to [`debugger.start()`]().
+--   - *lang*: The lexer name of the language to start debugging.
+--   - *...*: Any arguments passed to [`debugger.start()`]().
 -- @field _G.events.DEBUGGER_CONTINUE (string)
 --   Emitted when a execution should be continued.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`...`_: Any arguments passed to [`debugger.continue()`]().
+--   - *lang*: The lexer name of the language being debugged.
+--   - *...*: Any arguments passed to [`debugger.continue()`]().
 -- @field _G.events.DEBUGGER_STEP_INTO (string)
 --   Emitted when execution should continue by one line, stepping into functions.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`...`_: Any arguments passed to [`debugger.step_into()`]().
+--   - *lang*: The lexer name of the language being debugged.
+--   - *...*: Any arguments passed to [`debugger.step_into()`]().
 -- @field _G.events.DEBUGGER_STEP_OVER (string)
 --   Emitted when execution should continue by one line, stepping over functions.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`...`_: Any arguments passed to [`debugger.step_over()`]().
+--   - *lang*: The lexer name of the language being debugged.
+--   - *...*: Any arguments passed to [`debugger.step_over()`]().
 -- @field _G.events.DEBUGGER_STEP_OUT (string)
 --   Emitted when execution should continue, stepping out of the current function.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`...`_: Any arguments passed to [`debugger.step_out()`]().
+--   - *lang*: The lexer name of the language being debugged.
+--   - *...*: Any arguments passed to [`debugger.step_out()`]().
 -- @field _G.events.DEBUGGER_PAUSE (string)
 --   Emitted when execution should be paused.
 --   This is only emitted when the debugger is running and executing (e.g. not at a breakpoint).
@@ -138,29 +137,29 @@ local M = {}
 --   debugger could not be paused. Listeners *must not* return `false` (they can return `nil`).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`...`_: Any arguments passed to [`debugger.pause()`]().
+--   - *lang*: The lexer name of the language being debugged.
+--   - *...*: Any arguments passed to [`debugger.pause()`]().
 -- @field _G.events.DEBUGGER_RESTART (string)
 --   Emitted when execution should restart from the beginning.
 --   This is only emitted when the debugger is running.
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`...`_: Any arguments passed to [`debugger.restart()`]().
+--   - *lang*: The lexer name of the language being debugged.
+--   - *...*: Any arguments passed to [`debugger.restart()`]().
 -- @field _G.events.DEBUGGER_STOP (string)
 --   Emitted when a debugger should be stopped.
 --   This is only emitted when the debugger is running.
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language to stop debugging.
---   * _`...`_: Any arguments passed to [`debugger.stop()`]().
+--   - *lang*: The lexer name of the language to stop debugging.
+--   - *...*: Any arguments passed to [`debugger.stop()`]().
 -- @field _G.events.DEBUGGER_SET_FRAME (string)
 --   Emitted when a stack frame should be switched to.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`level`_: The 1-based stack level number to switch to. This value depends on the stack
+--   - *lang*: The lexer name of the language being debugged.
+--   - *level*: The 1-based stack level number to switch to. This value depends on the stack
 --     levels given to [`debugger.update_state()`]().
 -- @field _G.events.DEBUGGER_INSPECT (string)
 --   Emitted when a symbol should be inspected.
@@ -168,23 +167,23 @@ local M = {}
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`position`_: The buffer position of the symbol to inspect. The debugger is responsible
+--   - *lang*: The lexer name of the language being debugged.
+--   - *position*: The buffer position of the symbol to inspect. The debugger is responsible
 --     for identifying the symbol's name, as symbol characters vary from language to language.
 -- @field _G.events.DEBUGGER_COMMAND (string)
 --   Emitted when a debugger command should be run.
 --   This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 --   Arguments:
 --
---   * _`lang`_: The lexer name of the language being debugged.
---   * _`text`_: The text of the command to run.
+--   - *lang*: The lexer name of the language being debugged.
+--   - *text*: The text of the command to run.
 -- @field use_status_buffers (boolean)
 --   Whether or not to use debug status buffers like variables, call stack, etc.
 -- @field MARK_BREAKPOINT_COLOR (number)
 --   The color of breakpoint markers.
 -- @field MARK_DEBUGLINE_COLOR (number)
 --   The color of the current debug line marker.
-module('debugger')]]
+-- @module debugger
 
 local events = events
 -- LuaFormatter off

@@ -2,7 +2,6 @@
 
 local M = {}
 
---[[ This comment is for LuaDoc.
 ---
 -- Language debugging support for Lua.
 -- Requires LuaSocket to be installed for the external Lua interpreter invoked.
@@ -16,7 +15,7 @@ local M = {}
 -- @field max_value_length (number)
 --   The rough maximum length of variable values displayed in the variable list.
 --   The default value is `100`.
-module('debugger.lua')]]
+-- @module debugger.lua
 
 M.logging = false
 M.show_ENV = false

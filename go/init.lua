@@ -2,7 +2,6 @@
 
 local M = {}
 
---[[ This comment is for LuaDoc.
 ---
 -- Language debugging support for Go.
 -- Requires Delve to be installed and 'dlv' to be available for `os.spawn()`.
@@ -11,7 +10,7 @@ local M = {}
 -- @field log_rpc (boolean)
 --   Whether or not to enable logging of JSON RPC messages sent to and received from Delve.
 --   Log messages are printed to stdout.
-module('debugger.go')]]
+-- @module debugger.go
 
 M.logging = true
 M.log_rpc = true
