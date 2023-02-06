@@ -18,7 +18,7 @@ FetchContent_Declare(lua_socket
   URL https://github.com/diegonehab/luasocket/archive/${lua_socket_zip}
   PATCH_COMMAND patch -N -p1 < ${src}/luasocket.patch)
 FetchContent_MakeAvailable(lua_socket)
-set(mobdebug_zip 0.70.zip)
+set(mobdebug_zip 0.80.zip)
 FetchContent_Declare(mobdebug URL https://github.com/pkulchenko/MobDebug/archive/${mobdebug_zip})
 FetchContent_MakeAvailable(mobdebug)
 set(dkjson_tgz dkjson-2.5.tar.gz)
