@@ -247,9 +247,9 @@ if not rawget(_L, 'Remove Breakpoint') then
   _L['Remove Watch Expression...'] = 'Remove Watch E_xpression...'
 end
 
-local MARK_BREAKPOINT = _SCINTILLA.next_marker_number()
-local MARK_DEBUGLINE = _SCINTILLA.next_marker_number()
-local MARK_CALLSTACK = _SCINTILLA.next_marker_number()
+local MARK_BREAKPOINT = _SCINTILLA.new_marker_number()
+local MARK_DEBUGLINE = _SCINTILLA.new_marker_number()
+local MARK_CALLSTACK = _SCINTILLA.new_marker_number()
 
 M.use_status_buffers = true
 
@@ -835,35 +835,33 @@ events.connect(events.DOUBLE_CLICK,
 local menubar = textadept.menu.menubar
 for i = 1, #menubar do
   if menubar[i].title ~= _L['Tools'] then goto continue end
-  -- LuaFormatter off
   table.insert(menubar, i + 1, {
-    title = _L['Debug'],
-    {_L['Go/Continue'], M.continue},
-    {_L['Step Over'], M.step_over},
-    {_L['Step Into'], M.step_into},
-    {_L['Step Out'], M.step_out},
-    {_L['Pause/Break'], M.pause},
-    {_L['Restart'], M.restart},
-    {_L['Stop'], M.stop},
-    {''},
-    {_L['Inspect'], M.inspect},
-    {_L['View Variables'], M.variables},
-    {_L['View Call Stack'], M.call_stack},
-    {_L['Set Call Stack Frame...'], M.set_frame},
-    {_L['Evaluate...'], function()
-      -- TODO: command entry loses focus when run from select command dialog. This works fine
-      -- when run from menu directly.
-      local lang = get_lang()
-      if not states[lang] or states[lang].executing then return end
-      ui.command_entry.run(_L['Expression:'], M.evaluate, 'lua')
-    end},
-    {''},
-    {_L['Toggle Breakpoint'], M.toggle_breakpoint},
-    {_L['Remove Breakpoint...'], M.remove_breakpoint},
-    {_L['Set Watch Expression'], M.set_watch},
+    title = _L['Debug'], --
+    {_L['Go/Continue'], M.continue}, --
+    {_L['Step Over'], M.step_over}, --
+    {_L['Step Into'], M.step_into}, --
+    {_L['Step Out'], M.step_out}, --
+    {_L['Pause/Break'], M.pause}, --
+    {_L['Restart'], M.restart}, --
+    {_L['Stop'], M.stop}, --
+    {''}, --
+    {_L['Inspect'], M.inspect}, --
+    {_L['View Variables'], M.variables}, --
+    {_L['View Call Stack'], M.call_stack}, --
+    {_L['Set Call Stack Frame...'], M.set_frame}, {
+      _L['Evaluate...'], function()
+        -- TODO: command entry loses focus when run from select command dialog. This works fine
+        -- when run from menu directly.
+        local lang = get_lang()
+        if not states[lang] or states[lang].executing then return end
+        ui.command_entry.run(_L['Expression:'], M.evaluate, 'lua')
+      end
+    }, {''}, --
+    {_L['Toggle Breakpoint'], M.toggle_breakpoint}, --
+    {_L['Remove Breakpoint...'], M.remove_breakpoint}, --
+    {_L['Set Watch Expression'], M.set_watch}, --
     {_L['Remove Watch Expression...'], M.remove_watch}
   })
-  -- LuaFormatter on
   break
   ::continue::
 end
