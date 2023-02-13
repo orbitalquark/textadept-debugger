@@ -15,7 +15,7 @@ local M = {}
 M.logging = true
 M.log_rpc = true
 
-if not rawget(_L['No project root found']) then
+if not rawget(_L, 'No project root found') then
   _L['No project root found'] = 'No project root found'
 end
 
