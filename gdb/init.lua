@@ -1,20 +1,17 @@
 -- Copyright 2007-2023 Mitchell. See LICENSE.
 
+--- Language debugging support for C and C++.
+-- @module debugger.ansi_c
 local M = {}
 
----
--- Language debugging support for C and C++.
--- @field logging (boolean)
---   Whether or not to enable logging. Log messages are printed to stdout.
--- @module debugger.ansi_c
-
+--- Whether or not to enable logging. Log messages are printed to stdout.
 M.logging = false
 
 local debugger = require('debugger')
 
 local proc, run, breakpoints, watchpoints, pid
 
--- Reads and returns all gdb output since the previous command.
+--- Reads and returns all gdb output since the previous command.
 -- The gdb sentinel is not included.
 local function read_output()
   local output = {}
@@ -26,7 +23,7 @@ local function read_output()
   return table.concat(output, '\n')
 end
 
--- Runs the gdb command *cmd* and returns its output.
+--- Runs the gdb command *cmd* and returns its output.
 -- The returned output may contain unrelated asynchronous output (out of band records).
 -- @param cmd String gdb command to run.
 -- @return string command output
@@ -40,7 +37,7 @@ end
 
 local function unescape(value) return (value:gsub('\\', '')) end
 
--- Computes the current debugger state.
+--- Computes the current debugger state.
 -- It is possible that the debugger is being forcibly paused without any file or line information
 -- in the current stack frame, so account for that.
 local function get_state()
@@ -80,7 +77,7 @@ local function get_state()
   return {file = file, line = line, call_stack = call_stack, variables = variables}
 end
 
--- Helper function to update debugger state if possible.
+--- Helper function to update debugger state if possible.
 local function update_state()
   local state = get_state()
   if state then debugger.update_state(state) end

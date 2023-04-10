@@ -1,18 +1,14 @@
 -- Copyright 2022-2023 Mitchell. See LICENSE.
 
+--- Language debugging support for Go.
+-- Requires Delve to be installed and 'dlv' to be available for `os.spawn()`.
+-- @module debugger.go
 local M = {}
 
----
--- Language debugging support for Go.
--- Requires Delve to be installed and 'dlv' to be available for `os.spawn()`.
--- @field logging (boolean)
---   Whether or not to enable logging. Log messages are printed to stdout.
--- @field log_rpc (boolean)
---   Whether or not to enable logging of JSON RPC messages sent to and received from Delve.
---   Log messages are printed to stdout.
--- @module debugger.go
-
+--- Whether or not to enable logging. Log messages are printed to stdout.
 M.logging = true
+--- Whether or not to enable logging of JSON RPC messages sent to and received from Delve.
+-- Log messages are printed to stdout.
 M.log_rpc = true
 
 if not rawget(_L, 'No project root found') then
@@ -24,7 +20,7 @@ local json = require('debugger.dkjson')
 
 local proc, client, breakpoints, watchpoints, rpc_id
 
--- Sends a JSON-RPC request to Delve, the Go debugger.
+--- Sends a JSON-RPC request to Delve, the Go debugger.
 -- @param method String method name.
 -- @param params Table of parameters for the method.
 -- @usage request('Command', {name = 'continue'})
@@ -41,10 +37,10 @@ local function request(method, params)
   return message.result ~= json.null and message.result or nil
 end
 
--- Map of unprintable characters to their escaped version.
+--- Map of unprintable characters to their escaped version.
 local escaped = {['\t'] = '\\t', ['\r'] = '\\r', ['\n'] = '\\n'}
 
--- Returns the value of the given variable as a pretty-printed string.
+--- Returns the value of the given variable as a pretty-printed string.
 -- @param variable Variable to pretty-print.
 -- @param multi_line Whether or not to print on multiple lines. The default value is `false`.
 -- @param indent_level Internal level of indentation for multi-line printing.
@@ -76,7 +72,7 @@ local function pretty_print(variable, multi_line, indent_level)
   end
 end
 
--- Computes the current debugger state from a Delve state.
+--- Computes the current debugger state from a Delve state.
 -- @param state State returned by a Delve Command.
 local function get_state(state)
   if state.exited then
@@ -112,7 +108,7 @@ local function get_state(state)
   }
 end
 
--- Helper function to update debugger state if possible.
+--- Helper function to update debugger state if possible.
 local function update_state(state)
   local state = get_state((state or request('State', {NonBlocking = true})).State)
   if state then debugger.update_state(state) end
@@ -154,7 +150,7 @@ events.connect(events.DEBUGGER_START, function(lang, root, package, args)
   end
 end)
 
--- Runs continue, step over, step into, and step out of commands, and updates the debugger state.
+--- Runs continue, step over, step into, and step out of commands, and updates the debugger state.
 -- @param name The Delve command name to run. One of 'continue', 'step', 'next', or 'stepOut'.
 local function run_command(name)
   update_state(request('Command', {name = name}))

@@ -1,24 +1,19 @@
 -- Copyright 2007-2023 Mitchell. See LICENSE.
 
-local M = {}
-
----
--- Language debugging support for Lua.
+--- Language debugging support for Lua.
 -- Requires LuaSocket to be installed for the external Lua interpreter invoked.
 -- This module bundles a copy of LuaSocket for use with Textadept and its version of Lua,
 -- which may not match the external Lua interpreter's version.
--- @field logging (boolean)
---   Whether or not to enable logging. Log messages are printed to stdout.
--- @field show_ENV (boolean)
---   Whether or not to show _ENV in the variable list.
---   The default value is `false`.
--- @field max_value_length (number)
---   The rough maximum length of variable values displayed in the variable list.
---   The default value is `100`.
 -- @module debugger.lua
+local M = {}
 
+--- Whether or not to enable logging. Log messages are printed to stdout.
 M.logging = false
+--- Whether or not to show _ENV in the variable list.
+-- The default value is `false`.
 M.show_ENV = false
+--- The rough maximum length of variable values displayed in the variable list.
+-- The default value is `100`.
 M.max_value_length = 100
 
 local debugger = require('debugger')
@@ -36,7 +31,7 @@ package.path, package.cpath = orig_path, orig_cpath
 
 local server, client, proc
 
--- Invokes MobDebug to perform a debugger action, and then executes the given callback function
+--- Invokes MobDebug to perform a debugger action, and then executes the given callback function
 -- with the results.
 -- Since communication happens over sockets, and since socket reads are non-blocking in order
 -- to keep Textadept responsive, use some coroutine and timeout tricks to keep MobDebug happy.
@@ -76,16 +71,12 @@ local function handle(action, callback)
 end
 
 -- Current stack from MobDebug
--- @class table
--- @name stack
 local stack
 
 -- Expressions to watch in the variables list.
--- @class table
--- @name watches
 local watches
 
--- Computes current debugger state.
+--- Computes current debugger state.
 -- @param level Level to get the state of. 1 is for the current function, 2 for the caller,
 --   etc. The default value is 1.
 local function get_state(level)
@@ -130,14 +121,14 @@ local function get_state(level)
   return {file = file, line = line, call_stack = call_stack, variables = variables}
 end
 
--- Helper function to update debugger state if possible.
+--- Helper function to update debugger state if possible.
 -- @param level Passed to `get_state()`.
 local function update_state(level)
   local state = get_state(level)
   if state then debugger.update_state(state) end
 end
 
--- Handles continue, step over, step into, and step out of events, and updates the debugger state.
+--- Handles continue, step over, step into, and step out of events, and updates the debugger state.
 -- @param action MobDebug action to run. One of 'run', 'step', 'over', or 'out'.
 local function handle_continuation(action)
   handle(action, function(file, line)
