@@ -210,50 +210,50 @@ M.MARK_CALLSTACK_COLOR = 0x6DD9D9
 -- Localizations.
 local _L = _L
 if not rawget(_L, 'Remove Breakpoint') then
-  -- Debugger messages.
-  _L['Debugging'] = 'Debugging'
-  _L['paused'] = 'paused'
-  _L['executing'] = 'executing'
-  _L['Cannot Set Breakpoint'] = 'Cannot Set Breakpoint'
-  _L['Debugger is executing'] = 'Debugger is executing'
-  _L['Please wait until debugger is stopped or paused'] =
-    'Please wait until debugger is stopped or paused'
-  _L['Cannot Remove Breakpoint'] = 'Cannot Remove Breakpoint'
-  _L['Remove Breakpoint'] = 'Remove Breakpoint'
-  _L['Breakpoint:'] = 'Breakpoint:'
-  _L['Cannot Set Watch'] = 'Cannot Set Watch'
-  _L['Set Watch Expression:'] = 'Set Watch Expression:'
-  _L['Expression:'] = 'Expression:'
-  _L['Watch and Break'] = 'Watch and _Break'
-  _L['Watch Only'] = '_Watch Only'
-  _L['Cannot Remove Watch'] = 'Cannot Remove Watch'
-  _L['Remove Watch'] = 'Remove Watch'
-  _L['Error Starting Debugger'] = 'Error Starting Debugger'
-  _L['[Variables]'] = '[Variables]'
-  _L['[Call Stack]'] = '[Call Stack]'
-  _L['Debugger started'] = 'Debugger started'
-  _L['Debugger stopped'] = 'Debugger stopped'
-  _L['Variables and Watches'] = 'Variables and Watches'
-  _L['Value'] = 'Value'
-  _L['Call Stack'] = 'Call Stack'
-  _L['Set Frame'] = '_Set Frame'
-  -- Menu.
-  _L['Debug'] = '_Debug'
-  _L['Go/Continue'] = 'Go/_Continue'
-  _L['Step Over'] = 'Step _Over'
-  _L['Step Into'] = 'Step _Into'
-  _L['Step Out'] = 'Step O_ut'
-  _L['Pause/Break'] = 'Pause/_Break'
-  _L['Restart'] = '_Restart'
-  _L['Inspect'] = 'I_nspect'
-  _L['View Variables'] = 'View _Variables'
-  _L['View Call Stack'] = 'View Ca_ll Stack'
-  _L['Set Call Stack Frame...'] = 'Set Call Stac_k Frame...'
-  _L['Evaluate...'] = '_Evaluate...'
-  _L['Toggle Breakpoint'] = 'Toggle _Breakpoint'
-  _L['Remove Breakpoint...'] = 'Remo_ve Breakpoint...'
-  _L['Set Watch Expression'] = 'Set _Watch Expression'
-  _L['Remove Watch Expression...'] = 'Remove Watch E_xpression...'
+	-- Debugger messages.
+	_L['Debugging'] = 'Debugging'
+	_L['paused'] = 'paused'
+	_L['executing'] = 'executing'
+	_L['Cannot Set Breakpoint'] = 'Cannot Set Breakpoint'
+	_L['Debugger is executing'] = 'Debugger is executing'
+	_L['Please wait until debugger is stopped or paused'] =
+		'Please wait until debugger is stopped or paused'
+	_L['Cannot Remove Breakpoint'] = 'Cannot Remove Breakpoint'
+	_L['Remove Breakpoint'] = 'Remove Breakpoint'
+	_L['Breakpoint:'] = 'Breakpoint:'
+	_L['Cannot Set Watch'] = 'Cannot Set Watch'
+	_L['Set Watch Expression:'] = 'Set Watch Expression:'
+	_L['Expression:'] = 'Expression:'
+	_L['Watch and Break'] = 'Watch and _Break'
+	_L['Watch Only'] = '_Watch Only'
+	_L['Cannot Remove Watch'] = 'Cannot Remove Watch'
+	_L['Remove Watch'] = 'Remove Watch'
+	_L['Error Starting Debugger'] = 'Error Starting Debugger'
+	_L['[Variables]'] = '[Variables]'
+	_L['[Call Stack]'] = '[Call Stack]'
+	_L['Debugger started'] = 'Debugger started'
+	_L['Debugger stopped'] = 'Debugger stopped'
+	_L['Variables and Watches'] = 'Variables and Watches'
+	_L['Value'] = 'Value'
+	_L['Call Stack'] = 'Call Stack'
+	_L['Set Frame'] = '_Set Frame'
+	-- Menu.
+	_L['Debug'] = '_Debug'
+	_L['Go/Continue'] = 'Go/_Continue'
+	_L['Step Over'] = 'Step _Over'
+	_L['Step Into'] = 'Step _Into'
+	_L['Step Out'] = 'Step O_ut'
+	_L['Pause/Break'] = 'Pause/_Break'
+	_L['Restart'] = '_Restart'
+	_L['Inspect'] = 'I_nspect'
+	_L['View Variables'] = 'View _Variables'
+	_L['View Call Stack'] = 'View Ca_ll Stack'
+	_L['Set Call Stack Frame...'] = 'Set Call Stac_k Frame...'
+	_L['Evaluate...'] = '_Evaluate...'
+	_L['Toggle Breakpoint'] = 'Toggle _Breakpoint'
+	_L['Remove Breakpoint...'] = 'Remo_ve Breakpoint...'
+	_L['Set Watch Expression'] = 'Set _Watch Expression'
+	_L['Remove Watch Expression...'] = 'Remove Watch E_xpression...'
 end
 
 local MARK_BREAKPOINT = _SCINTILLA.new_marker_number()
@@ -287,24 +287,24 @@ local states = {}
 -- @param lang Optional lexer language to get the debugger module for.
 -- @see aliases
 local function get_lang(lang)
-  if not lang then lang = buffer.lexer_language end
-  return M.aliases[lang] or lang
+	if not lang then lang = buffer.lexer_language end
+	return M.aliases[lang] or lang
 end
 
 --- Notifies via the statusbar that debugging is happening.
 local function update_statusbar()
-  local lang = get_lang()
-  local status = states[lang] and _L[states[lang].executing and 'executing' or 'paused'] or '?'
-  ui.statusbar_text = string.format('%s (%s)', _L['Debugging'], status)
+	local lang = get_lang()
+	local status = states[lang] and _L[states[lang].executing and 'executing' or 'paused'] or '?'
+	ui.statusbar_text = string.format('%s (%s)', _L['Debugging'], status)
 end
 
 --- Notifies via a dialog that an action cannot be performed because the debugger is currently
 -- executing.
 local function notify_executing(title)
-  ui.dialogs.message{
-    title = title, text = string.format('%s\n%s', _L['Debugger is executing'],
-      _L['Please wait until debugger is stopped or paused']), icon = 'dialog-error'
-  }
+	ui.dialogs.message{
+		title = title, text = string.format('%s\n%s', _L['Debugger is executing'],
+			_L['Please wait until debugger is stopped or paused']), icon = 'dialog-error'
+	}
 end
 
 --- Sets a breakpoint in file *file* on line number *line*.
@@ -315,17 +315,17 @@ end
 -- @param file Filename to set the breakpoint in.
 -- @param line The 1-based line number to break on.
 local function set_breakpoint(file, line)
-  local lang = get_lang()
-  if states[lang] and states[lang].executing then
-    notify_executing(_L['Cannot Set Breakpoint'])
-    return
-  end
-  if not breakpoints[lang] then breakpoints[lang] = {} end
-  if not breakpoints[lang][file] then breakpoints[lang][file] = {} end
-  breakpoints[lang][file][line] = true
-  if file == buffer.filename then buffer:marker_add(line, MARK_BREAKPOINT) end
-  if not states[lang] then return end -- not debugging
-  events.emit(events.DEBUGGER_BREAKPOINT_ADDED, lang, file, line)
+	local lang = get_lang()
+	if states[lang] and states[lang].executing then
+		notify_executing(_L['Cannot Set Breakpoint'])
+		return
+	end
+	if not breakpoints[lang] then breakpoints[lang] = {} end
+	if not breakpoints[lang][file] then breakpoints[lang][file] = {} end
+	breakpoints[lang][file][line] = true
+	if file == buffer.filename then buffer:marker_add(line, MARK_BREAKPOINT) end
+	if not states[lang] then return end -- not debugging
+	events.emit(events.DEBUGGER_BREAKPOINT_ADDED, lang, file, line)
 end
 
 --- Removes a breakpoint from line number *line* in file *file*, or prompts the user for a
@@ -336,37 +336,37 @@ end
 -- @param file Optional filename of the breakpoint to remove.
 -- @param line Optional 1-based line number of the breakpoint to remove.
 function M.remove_breakpoint(file, line)
-  local lang = get_lang()
-  if states[lang] and states[lang].executing then
-    notify_executing(_L['Cannot Remove Breakpoint'])
-    return
-  end
-  if (not file or not line) and breakpoints[lang] then
-    local items = {}
-    for filename, file_breakpoints in pairs(breakpoints[lang]) do
-      if file and file ~= filename then goto continue end
-      for break_line in pairs(file_breakpoints) do
-        items[#items + 1] = string.format('%s:%d', filename, break_line)
-      end
-      ::continue::
-    end
-    table.sort(items)
-    local selected = ui.dialogs.list{
-      title = _L['Remove Breakpoint'], items = items, multiple = true
-    }
-    if not selected then return end
-    for _, i in ipairs(selected) do
-      file, line = items[i]:match('^(.+):(%d+)$')
-      M.remove_breakpoint(file, tonumber(line))
-    end
-    return
-  end
-  if breakpoints[lang] and breakpoints[lang][file] then
-    breakpoints[lang][file][line] = nil
-    if file == buffer.filename then buffer:marker_delete(line, MARK_BREAKPOINT) end
-    if not states[lang] then return end -- not debugging
-    events.emit(events.DEBUGGER_BREAKPOINT_REMOVED, lang, file, line)
-  end
+	local lang = get_lang()
+	if states[lang] and states[lang].executing then
+		notify_executing(_L['Cannot Remove Breakpoint'])
+		return
+	end
+	if (not file or not line) and breakpoints[lang] then
+		local items = {}
+		for filename, file_breakpoints in pairs(breakpoints[lang]) do
+			if file and file ~= filename then goto continue end
+			for break_line in pairs(file_breakpoints) do
+				items[#items + 1] = string.format('%s:%d', filename, break_line)
+			end
+			::continue::
+		end
+		table.sort(items)
+		local selected = ui.dialogs.list{
+			title = _L['Remove Breakpoint'], items = items, multiple = true
+		}
+		if not selected then return end
+		for _, i in ipairs(selected) do
+			file, line = items[i]:match('^(.+):(%d+)$')
+			M.remove_breakpoint(file, tonumber(line))
+		end
+		return
+	end
+	if breakpoints[lang] and breakpoints[lang][file] then
+		breakpoints[lang][file][line] = nil
+		if file == buffer.filename then buffer:marker_delete(line, MARK_BREAKPOINT) end
+		if not states[lang] then return end -- not debugging
+		events.emit(events.DEBUGGER_BREAKPOINT_REMOVED, lang, file, line)
+	end
 end
 
 --- Toggles a breakpoint on line number *line* in file *file*, or the current line in the
@@ -377,15 +377,15 @@ end
 -- @param file Optional filename of the breakpoint to toggle.
 -- @param line Optional 1-based line number of the breakpoint to toggle.
 function M.toggle_breakpoint(file, line)
-  local lang = get_lang()
-  if not file then file = buffer.filename end
-  if not file then return end -- nothing to do
-  if not line then line = buffer:line_from_position(buffer.current_pos) end
-  if not breakpoints[lang] or not breakpoints[lang][file] or not breakpoints[lang][file][line] then
-    set_breakpoint(file, line)
-  else
-    M.remove_breakpoint(file, line)
-  end
+	local lang = get_lang()
+	if not file then file = buffer.filename end
+	if not file then return end -- nothing to do
+	if not line then line = buffer:line_from_position(buffer.current_pos) end
+	if not breakpoints[lang] or not breakpoints[lang][file] or not breakpoints[lang][file][line] then
+		set_breakpoint(file, line)
+	else
+		M.remove_breakpoint(file, line)
+	end
 end
 
 --- Watches string expression *expr* for changes and breaks on each change unless *no_break* is
@@ -398,26 +398,26 @@ end
 -- @param no_break Whether to just watch the expression and not break on changes. The default
 --   value is `false`.
 function M.set_watch(expr, no_break)
-  local lang = get_lang()
-  if states[lang] and states[lang].executing then
-    notify_executing(_L['Cannot Set Watch'])
-    return
-  end
-  if not expr then
-    local button
-    expr, button = ui.dialogs.input{
-      title = _L['Set Watch Expression:'], button1 = _L['Watch and Break'],
-      button2 = _L['Watch Only'], button3 = _L['Cancel'], return_button = true
-    }
-    if (button ~= 1 and button ~= 2) or expr == '' then return end
-    if button == 2 then no_break = true end
-  end
-  if not watches[lang] then watches[lang] = {n = 0} end
-  local watch_exprs = watches[lang]
-  watch_exprs.n = watch_exprs.n + 1
-  watch_exprs[watch_exprs.n], watch_exprs[expr] = {expr = expr, no_break = no_break}, watch_exprs.n
-  if not states[lang] then return end -- not debugging
-  events.emit(events.DEBUGGER_WATCH_ADDED, lang, expr, watch_exprs.n, no_break)
+	local lang = get_lang()
+	if states[lang] and states[lang].executing then
+		notify_executing(_L['Cannot Set Watch'])
+		return
+	end
+	if not expr then
+		local button
+		expr, button = ui.dialogs.input{
+			title = _L['Set Watch Expression:'], button1 = _L['Watch and Break'],
+			button2 = _L['Watch Only'], button3 = _L['Cancel'], return_button = true
+		}
+		if (button ~= 1 and button ~= 2) or expr == '' then return end
+		if button == 2 then no_break = true end
+	end
+	if not watches[lang] then watches[lang] = {n = 0} end
+	local watch_exprs = watches[lang]
+	watch_exprs.n = watch_exprs.n + 1
+	watch_exprs[watch_exprs.n], watch_exprs[expr] = {expr = expr, no_break = no_break}, watch_exprs.n
+	if not states[lang] then return end -- not debugging
+	events.emit(events.DEBUGGER_WATCH_ADDED, lang, expr, watch_exprs.n, no_break)
 end
 
 --- Stops watching the expression identified by *id*, or the expression selected by the user.
@@ -426,36 +426,36 @@ end
 -- shows an error message.
 -- @param id ID number of the expression, as given in the `events.DEBUGGER_WATCH_ADDED` event.
 function M.remove_watch(id)
-  local lang = get_lang()
-  if states[lang] and states[lang].executing then
-    notify_executing(_L['Cannot Set Watch'])
-    return
-  end
-  if not id and watches[lang] then
-    local items = {}
-    for i = 1, watches[lang].n do
-      local watch = watches[lang][i]
-      if watch then items[#items + 1] = watch.expr end
-    end
-    local i = ui.dialogs.list{title = _L['Remove Watch'], items = items}
-    if not i then return end
-    id = watches[lang][items[i]] -- TODO: handle duplicates
-  end
-  local watch_exprs = watches[lang]
-  if watch_exprs and watch_exprs[id] then
-    local expr = watch_exprs[id].expr
-    watch_exprs[id], watch_exprs[expr] = nil, nil
-    -- TODO: handle duplicate exprs
-    if not states[lang] then return end -- not debugging
-    events.emit(events.DEBUGGER_WATCH_REMOVED, lang, expr, id)
-  end
+	local lang = get_lang()
+	if states[lang] and states[lang].executing then
+		notify_executing(_L['Cannot Set Watch'])
+		return
+	end
+	if not id and watches[lang] then
+		local items = {}
+		for i = 1, watches[lang].n do
+			local watch = watches[lang][i]
+			if watch then items[#items + 1] = watch.expr end
+		end
+		local i = ui.dialogs.list{title = _L['Remove Watch'], items = items}
+		if not i then return end
+		id = watches[lang][items[i]] -- TODO: handle duplicates
+	end
+	local watch_exprs = watches[lang]
+	if watch_exprs and watch_exprs[id] then
+		local expr = watch_exprs[id].expr
+		watch_exprs[id], watch_exprs[expr] = nil, nil
+		-- TODO: handle duplicate exprs
+		if not states[lang] then return end -- not debugging
+		events.emit(events.DEBUGGER_WATCH_REMOVED, lang, expr, id)
+	end
 end
 
 --- Returns the specified debug buffer, creating it if necessary.
 local function debug_buffer(type)
-  for _, buffer in ipairs(_BUFFERS) do if buffer._type == type then return buffer end end
-  buffer.new()._type = type
-  return buffer
+	for _, buffer in ipairs(_BUFFERS) do if buffer._type == type then return buffer end end
+	buffer.new()._type = type
+	return buffer
 end
 
 --- Starts a debugger and adds any queued breakpoints and watches.
@@ -467,51 +467,51 @@ end
 --   the name of the current lexer.
 -- @return whether or not a debugger was started
 function M.start(lang, ...)
-  lang = get_lang(lang)
-  if states[lang] then return end -- already debugging
-  local ok, errmsg = pcall(events.emit, events.DEBUGGER_START, lang, ...)
-  if not ok then
-    ui.dialogs.message{title = _L['Error Starting Debugger'], text = errmsg, icon = 'dialog-error'}
-    return
-  elseif ok and not errmsg then
-    return false -- no debugger for this language
-  end
-  states[lang] = {} -- initial value
-  if M.aliases[lang] then
-    -- for _, alias in ipairs(M.aliases[lang]) do states[alias] = states[lang] end
-  end
-  if not breakpoints[lang] then breakpoints[lang] = {} end
-  for file, file_breakpoints in pairs(breakpoints[lang]) do
-    for line in pairs(file_breakpoints) do
-      events.emit(events.DEBUGGER_BREAKPOINT_ADDED, lang, file, line)
-    end
-  end
-  if not watches[lang] then watches[lang] = {n = 0} end
-  for i = 1, watches[lang].n do
-    local watch = watches[lang][i]
-    if watch then events.emit(events.DEBUGGER_WATCH_ADDED, lang, watch.expr, i, watch.no_break) end
-  end
-  if M.use_status_buffers then
-    if #_VIEWS == 1 then
-      -- Split into 3 lower views: message buffer, variables, call stack.
-      -- Note if `ui.tabs` is true, the message buffer will be in a separate tab, not split view.
-      ui.output(_L['Debugger started'], '\n')
-      view:split(#_VIEWS > 1)
-      view.size = ui.size[1] // #_VIEWS
-      view:goto_buffer(debug_buffer(_L['[Variables]']))
-      ui.update() -- ensure correct sizing for next split
-      local variables, call_stack = view:split(true)
-      view:goto_buffer(debug_buffer(_L['[Call Stack]']))
-      ui.goto_view(_VIEWS[1])
-    elseif #_VIEWS >= 3 then -- assume previous debug layout
-      _VIEWS[#_VIEWS - 1]:goto_buffer(debug_buffer(_L['[Variables]']))
-      _VIEWS[#_VIEWS]:goto_buffer(debug_buffer(_L['[Call Stack]']))
-    end
-  end
-  ui.statusbar_text = _L['Debugger started']
-  events.disconnect(events.UPDATE_UI, update_statusbar) -- just in case
-  events.connect(events.UPDATE_UI, update_statusbar)
-  return true
+	lang = get_lang(lang)
+	if states[lang] then return end -- already debugging
+	local ok, errmsg = pcall(events.emit, events.DEBUGGER_START, lang, ...)
+	if not ok then
+		ui.dialogs.message{title = _L['Error Starting Debugger'], text = errmsg, icon = 'dialog-error'}
+		return
+	elseif ok and not errmsg then
+		return false -- no debugger for this language
+	end
+	states[lang] = {} -- initial value
+	if M.aliases[lang] then
+		-- for _, alias in ipairs(M.aliases[lang]) do states[alias] = states[lang] end
+	end
+	if not breakpoints[lang] then breakpoints[lang] = {} end
+	for file, file_breakpoints in pairs(breakpoints[lang]) do
+		for line in pairs(file_breakpoints) do
+			events.emit(events.DEBUGGER_BREAKPOINT_ADDED, lang, file, line)
+		end
+	end
+	if not watches[lang] then watches[lang] = {n = 0} end
+	for i = 1, watches[lang].n do
+		local watch = watches[lang][i]
+		if watch then events.emit(events.DEBUGGER_WATCH_ADDED, lang, watch.expr, i, watch.no_break) end
+	end
+	if M.use_status_buffers then
+		if #_VIEWS == 1 then
+			-- Split into 3 lower views: message buffer, variables, call stack.
+			-- Note if `ui.tabs` is true, the message buffer will be in a separate tab, not split view.
+			ui.output(_L['Debugger started'], '\n')
+			view:split(#_VIEWS > 1)
+			view.size = ui.size[1] // #_VIEWS
+			view:goto_buffer(debug_buffer(_L['[Variables]']))
+			ui.update() -- ensure correct sizing for next split
+			local variables, call_stack = view:split(true)
+			view:goto_buffer(debug_buffer(_L['[Call Stack]']))
+			ui.goto_view(_VIEWS[1])
+		elseif #_VIEWS >= 3 then -- assume previous debug layout
+			_VIEWS[#_VIEWS - 1]:goto_buffer(debug_buffer(_L['[Variables]']))
+			_VIEWS[#_VIEWS]:goto_buffer(debug_buffer(_L['[Call Stack]']))
+		end
+	end
+	ui.statusbar_text = _L['Debugger started']
+	events.disconnect(events.UPDATE_UI, update_statusbar) -- just in case
+	events.connect(events.UPDATE_UI, update_statusbar)
+	return true
 end
 
 --- Continue debugger execution unless the debugger is already executing (e.g. not at a
@@ -521,23 +521,23 @@ end
 -- @param lang Optional lexer name of the language to continue executing. The default value is
 --   the name of the current lexer.
 function M.continue(lang, ...)
-  lang = get_lang(lang)
-  if states[lang] and states[lang].executing then return end
-  if not states[lang] then
-    local f = M.project_commands[io.get_project_root()]
-    if not f then
-      if not M.start(lang) then return end
-    else
-      local args = table.pack(f())
-      if args.n == 0 or not args[1] then return end
-      lang = get_lang(args[1])
-      pcall(require, 'debugger.' .. lang) -- load events
-      if not M.start(table.unpack(args)) then return end
-    end
-  end
-  buffer:marker_delete_all(MARK_DEBUGLINE)
-  states[lang].executing = true
-  events.emit(events.DEBUGGER_CONTINUE, lang, ...)
+	lang = get_lang(lang)
+	if states[lang] and states[lang].executing then return end
+	if not states[lang] then
+		local f = M.project_commands[io.get_project_root()]
+		if not f then
+			if not M.start(lang) then return end
+		else
+			local args = table.pack(f())
+			if args.n == 0 or not args[1] then return end
+			lang = get_lang(args[1])
+			pcall(require, 'debugger.' .. lang) -- load events
+			if not M.start(table.unpack(args)) then return end
+		end
+	end
+	buffer:marker_delete_all(MARK_DEBUGLINE)
+	states[lang].executing = true
+	events.emit(events.DEBUGGER_CONTINUE, lang, ...)
 end
 
 --- Continue debugger execution by one line, stepping into functions, unless the debugger is
@@ -545,12 +545,12 @@ end
 -- If no debugger is running, starts one, then steps.
 -- Emits `events.DEBUGGER_STEP_INTO`, passing along any arguments given.
 function M.step_into(...)
-  local lang = get_lang()
-  if states[lang] and states[lang].executing then return end
-  if not states[lang] and not M.start(lang) then return end
-  buffer:marker_delete_all(MARK_DEBUGLINE)
-  states[lang].executing = true
-  events.emit(events.DEBUGGER_STEP_INTO, lang, ...)
+	local lang = get_lang()
+	if states[lang] and states[lang].executing then return end
+	if not states[lang] and not M.start(lang) then return end
+	buffer:marker_delete_all(MARK_DEBUGLINE)
+	states[lang].executing = true
+	events.emit(events.DEBUGGER_STEP_INTO, lang, ...)
 end
 
 --- Continue debugger execution by one line, stepping over functions, unless the debugger is
@@ -558,39 +558,39 @@ end
 -- If no debugger is running, starts one, then steps.
 -- Emits `events.DEBUGGER_STEP_OVER`, passing along any arguments given.
 function M.step_over(...)
-  local lang = get_lang()
-  if states[lang] and states[lang].executing then return end
-  if not states[lang] and not M.start(lang) then return end
-  buffer:marker_delete_all(MARK_DEBUGLINE)
-  states[lang].executing = true
-  events.emit(events.DEBUGGER_STEP_OVER, lang, ...)
+	local lang = get_lang()
+	if states[lang] and states[lang].executing then return end
+	if not states[lang] and not M.start(lang) then return end
+	buffer:marker_delete_all(MARK_DEBUGLINE)
+	states[lang].executing = true
+	events.emit(events.DEBUGGER_STEP_OVER, lang, ...)
 end
 
 --- Continue debugger execution, stepping out of the current function, unless the debugger is
 -- already executing (e.g. not at a breakpoint).
 -- Emits `events.DEBUGGER_STEP_OUT`, passing along any additional arguments given.
 function M.step_out(...)
-  local lang = get_lang()
-  if not states[lang] or states[lang].executing then return end
-  buffer:marker_delete_all(MARK_DEBUGLINE)
-  states[lang].executing = true
-  events.emit(events.DEBUGGER_STEP_OUT, lang, ...)
+	local lang = get_lang()
+	if not states[lang] or states[lang].executing then return end
+	buffer:marker_delete_all(MARK_DEBUGLINE)
+	states[lang].executing = true
+	events.emit(events.DEBUGGER_STEP_OUT, lang, ...)
 end
 
 --- Pause debugger execution unless the debugger is already paused (e.g. at a breakpoint).
 -- Emits `events.DEBUGGER_PAUSE`, passing along any additional arguments given.
 function M.pause(...)
-  local lang = get_lang()
-  if not states[lang] or not states[lang].executing then return end
-  if events.emit(events.DEBUGGER_PAUSE, lang, ...) then states[lang].executing = false end
+	local lang = get_lang()
+	if not states[lang] or not states[lang].executing then return end
+	if events.emit(events.DEBUGGER_PAUSE, lang, ...) then states[lang].executing = false end
 end
 
 --- Restarts debugger execution from the beginning.
 -- Emits `events.DEBUGGER_PAUSE`, passing along any additional arguments given.
 function M.restart(...)
-  local lang = get_lang()
-  if not states[lang] then return end -- not debugging
-  events.emit(events.DEBUGGER_RESTART, lang, ...)
+	local lang = get_lang()
+	if not states[lang] then return end -- not debugging
+	events.emit(events.DEBUGGER_RESTART, lang, ...)
 end
 
 --- Stops debugging.
@@ -599,25 +599,25 @@ end
 -- @param lang Optional lexer name of the language to stop debugging. The default value is the
 --   name of the current lexer.
 function M.stop(lang, ...)
-  lang = get_lang(lang)
-  if not states[lang] then return end -- not debugging
-  events.emit(events.DEBUGGER_STOP, lang, ...)
-  buffer:marker_delete_all(MARK_DEBUGLINE)
-  states[lang] = nil
-  for _, buffer in ipairs(_BUFFERS) do
-    if buffer._type == _L['[Variables]'] or buffer._type == _L['[Call Stack]'] then
-      buffer:marker_delete_all(-1)
-      buffer:clear_all()
-      buffer:empty_undo_buffer()
-      buffer:set_save_point()
-    end
-  end
-  events.disconnect(events.UPDATE_UI, update_statusbar)
-  if M.use_status_buffers then
-    ui.output(_L['Debugger stopped'], '\n')
-    ui.goto_view(_VIEWS[1])
-  end
-  ui.statusbar_text = _L['Debugger stopped']
+	lang = get_lang(lang)
+	if not states[lang] then return end -- not debugging
+	events.emit(events.DEBUGGER_STOP, lang, ...)
+	buffer:marker_delete_all(MARK_DEBUGLINE)
+	states[lang] = nil
+	for _, buffer in ipairs(_BUFFERS) do
+		if buffer._type == _L['[Variables]'] or buffer._type == _L['[Call Stack]'] then
+			buffer:marker_delete_all(-1)
+			buffer:clear_all()
+			buffer:empty_undo_buffer()
+			buffer:set_save_point()
+		end
+	end
+	events.disconnect(events.UPDATE_UI, update_statusbar)
+	if M.use_status_buffers then
+		ui.output(_L['Debugger stopped'], '\n')
+		ui.goto_view(_VIEWS[1])
+	end
+	ui.statusbar_text = _L['Debugger stopped']
 end
 
 --- Updates the running debugger's state and marks the current debug line.
@@ -629,72 +629,72 @@ end
 --   an optional map of known variables and watches to their values. The debugger can choose
 --   what kind of variables make sense to put in the map.
 function M.update_state(state)
-  assert(type(state) == 'table', 'state must be a table')
-  assert(state.file and state.line and state.call_stack,
-    'state must have file, line, and call_stack fields')
-  assert(type(state.call_stack) == 'table' and type(state.call_stack.pos) == 'number',
-    'state.call_stack must be a table with a numeric pos field')
-  if not state.variables then state.variables = {} end
-  states[get_lang()] = state
-  if M.use_status_buffers then
-    M.variables()
-    M.call_stack()
-  end
-  if state.file ~= buffer.filename then
-    ui.goto_file(state.file:iconv('UTF-8', _CHARSET), false, view)
-  end
-  buffer:marker_delete_all(MARK_DEBUGLINE)
-  buffer:marker_add(state.line, MARK_DEBUGLINE)
-  buffer:goto_line(state.line)
-  textadept.history.record()
+	assert(type(state) == 'table', 'state must be a table')
+	assert(state.file and state.line and state.call_stack,
+		'state must have file, line, and call_stack fields')
+	assert(type(state.call_stack) == 'table' and type(state.call_stack.pos) == 'number',
+		'state.call_stack must be a table with a numeric pos field')
+	if not state.variables then state.variables = {} end
+	states[get_lang()] = state
+	if M.use_status_buffers then
+		M.variables()
+		M.call_stack()
+	end
+	if state.file ~= buffer.filename then
+		ui.goto_file(state.file:iconv('UTF-8', _CHARSET), false, view)
+	end
+	buffer:marker_delete_all(MARK_DEBUGLINE)
+	buffer:marker_add(state.line, MARK_DEBUGLINE)
+	buffer:goto_line(state.line)
+	textadept.history.record()
 end
 
 --- Updates the buffer containing variables and watches in the current stack frame.
 -- Any variables/watches that have changed since the last updated are marked.
 function M.variables()
-  local lang = get_lang()
-  if not states[lang] or states[lang].executing then return end
-  if #_VIEWS == 1 then view:split() end
-  local buffer = debug_buffer(_L['[Variables]'])
-  local prev_variables = {}
-  for i = 1, buffer.line_count do
-    local name, value = buffer:get_line(i):match('^(.-)%s*=%s*(.-)\r?\n$')
-    if name then prev_variables[name] = value end
-  end
-  -- TODO: save/restore view first visible line?
-  buffer:marker_delete_all(-1)
-  buffer:set_text(_L['Variables and Watches'] .. '\n')
-  local names = {}
-  for k in pairs(states[lang].variables) do names[#names + 1] = k end
-  table.sort(names)
-  for i = 1, #names do
-    local name, value = names[i], states[lang].variables[names[i]]
-    buffer:append_text(string.format('%s = %s\n', name, value))
-    if watches[lang] and watches[lang][name] then
-      buffer:marker_add(1 + i, textadept.bookmarks.MARK_BOOKMARK)
-    end
-    if prev_variables[name] ~= nil and value ~= prev_variables[name] then
-      buffer:marker_add(1 + i, MARK_BREAKPOINT) -- recycle this marker
-    end
-  end
-  buffer:empty_undo_buffer()
-  buffer:set_save_point()
+	local lang = get_lang()
+	if not states[lang] or states[lang].executing then return end
+	if #_VIEWS == 1 then view:split() end
+	local buffer = debug_buffer(_L['[Variables]'])
+	local prev_variables = {}
+	for i = 1, buffer.line_count do
+		local name, value = buffer:get_line(i):match('^(.-)%s*=%s*(.-)\r?\n$')
+		if name then prev_variables[name] = value end
+	end
+	-- TODO: save/restore view first visible line?
+	buffer:marker_delete_all(-1)
+	buffer:set_text(_L['Variables and Watches'] .. '\n')
+	local names = {}
+	for k in pairs(states[lang].variables) do names[#names + 1] = k end
+	table.sort(names)
+	for i = 1, #names do
+		local name, value = names[i], states[lang].variables[names[i]]
+		buffer:append_text(string.format('%s = %s\n', name, value))
+		if watches[lang] and watches[lang][name] then
+			buffer:marker_add(1 + i, textadept.bookmarks.MARK_BOOKMARK)
+		end
+		if prev_variables[name] ~= nil and value ~= prev_variables[name] then
+			buffer:marker_add(1 + i, MARK_BREAKPOINT) -- recycle this marker
+		end
+	end
+	buffer:empty_undo_buffer()
+	buffer:set_save_point()
 end
 
 --- Updates the buffer containing the call stack.
 function M.call_stack()
-  local lang = get_lang()
-  if not states[lang] or states[lang].executing then return end
-  if #_VIEWS == 1 then view:split() end
-  local buffer = debug_buffer(_L['[Call Stack]'])
-  buffer._debug_view = view -- for switching back prior to setting frame
-  buffer:marker_delete_all(-1)
-  buffer:set_text(_L['Call Stack'] .. '\n')
-  local call_stack = states[lang].call_stack
-  for i = 1, #call_stack do buffer:append_text(call_stack[i] .. '\n') end
-  buffer:marker_add(1 + (call_stack.pos or 1), MARK_CALLSTACK)
-  buffer:empty_undo_buffer()
-  buffer:set_save_point()
+	local lang = get_lang()
+	if not states[lang] or states[lang].executing then return end
+	if #_VIEWS == 1 then view:split() end
+	local buffer = debug_buffer(_L['[Call Stack]'])
+	buffer._debug_view = view -- for switching back prior to setting frame
+	buffer:marker_delete_all(-1)
+	buffer:set_text(_L['Call Stack'] .. '\n')
+	local call_stack = states[lang].call_stack
+	for i = 1, #call_stack do buffer:append_text(call_stack[i] .. '\n') end
+	buffer:marker_add(1 + (call_stack.pos or 1), MARK_CALLSTACK)
+	buffer:empty_undo_buffer()
+	buffer:set_save_point()
 end
 
 --- Returns whether or not the given buffer is the call stack buffer.
@@ -705,30 +705,30 @@ local function is_cs_buf(buf) return buffer._type == _L['[Call Stack]'] end
 -- Emits `events.DEBUGGER_SET_FRAME`.
 -- @param level Optional 1-based stack frame index to switch to.
 function M.set_frame(level)
-  if is_cs_buf(buffer) then ui.goto_view(buffer._debug_view) end
-  local lang = get_lang()
-  if not states[lang] or states[lang].executing then return end
-  local call_stack = states[lang].call_stack
-  if not assert_type(level, 'number/nil', 1) then
-    local button
-    level, button = ui.dialogs.list{
-      title = _L['Call Stack'], items = call_stack, select = call_stack.pos or 1,
-      button1 = _L['OK'], button2 = _L['Set Frame'], return_button = true
-    }
-    if button ~= 2 then return end
-  elseif level < 1 or level > #call_stack then
-    level = math.max(1, math.min(#call_stack, level))
-  end
-  events.emit(events.DEBUGGER_SET_FRAME, lang, tonumber(level))
+	if is_cs_buf(buffer) then ui.goto_view(buffer._debug_view) end
+	local lang = get_lang()
+	if not states[lang] or states[lang].executing then return end
+	local call_stack = states[lang].call_stack
+	if not assert_type(level, 'number/nil', 1) then
+		local button
+		level, button = ui.dialogs.list{
+			title = _L['Call Stack'], items = call_stack, select = call_stack.pos or 1,
+			button1 = _L['OK'], button2 = _L['Set Frame'], return_button = true
+		}
+		if button ~= 2 then return end
+	elseif level < 1 or level > #call_stack then
+		level = math.max(1, math.min(#call_stack, level))
+	end
+	events.emit(events.DEBUGGER_SET_FRAME, lang, tonumber(level))
 end
 
 --- Evaluates string *text* in the current debugger context if the debugger is paused.
 -- The result (if any) is not returned, but likely printed to the message buffer.
 -- @param text String text to evaluate.
 function M.evaluate(text)
-  local lang = get_lang()
-  if not states[lang] or states[lang].executing then return end
-  events.emit(events.DEBUGGER_COMMAND, lang, assert_type(text, 'string', 1))
+	local lang = get_lang()
+	if not states[lang] or states[lang].executing then return end
+	events.emit(events.DEBUGGER_COMMAND, lang, assert_type(text, 'string', 1))
 end
 
 --- Inspects the symbol (if any) at buffer position *position*, unless the debugger is executing
@@ -736,38 +736,38 @@ end
 -- Emits `events.DEBUGGER_INSPECT`.
 -- @param position The buffer position to inspect.
 function M.inspect(position)
-  local lang = get_lang()
-  if not states[lang] or states[lang].executing then return end
-  events.emit(events.DEBUGGER_INSPECT, lang, position or buffer.current_pos)
+	local lang = get_lang()
+	if not states[lang] or states[lang].executing then return end
+	events.emit(events.DEBUGGER_INSPECT, lang, position or buffer.current_pos)
 end
 
 --- Sets view properties for debug markers.
 local function set_marker_properties()
-  view.mouse_dwell_time = 500
-  view:marker_define(MARK_BREAKPOINT, view.MARK_FULLRECT)
-  view:marker_define(MARK_DEBUGLINE, view.MARK_FULLRECT)
-  view:marker_define(MARK_CALLSTACK, view.MARK_FULLRECT)
-  view.marker_back[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_COLOR
-  -- view.marker_alpha[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_ALPHA
-  view.marker_back[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_COLOR
-  -- view.marker_alpha[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_ALPHA
-  view.marker_back[MARK_CALLSTACK] = M.MARK_CALLSTACK_COLOR
-  -- view.marker_alpha[MARK_CALLSTACK] = M.MARK_CALLSTACK_ALPHA
+	view.mouse_dwell_time = 500
+	view:marker_define(MARK_BREAKPOINT, view.MARK_FULLRECT)
+	view:marker_define(MARK_DEBUGLINE, view.MARK_FULLRECT)
+	view:marker_define(MARK_CALLSTACK, view.MARK_FULLRECT)
+	view.marker_back[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_COLOR
+	-- view.marker_alpha[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_ALPHA
+	view.marker_back[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_COLOR
+	-- view.marker_alpha[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_ALPHA
+	view.marker_back[MARK_CALLSTACK] = M.MARK_CALLSTACK_COLOR
+	-- view.marker_alpha[MARK_CALLSTACK] = M.MARK_CALLSTACK_ALPHA
 end
 events.connect(events.VIEW_NEW, set_marker_properties)
 
 -- Set breakpoint on margin-click.
 events.connect(events.MARGIN_CLICK, function(margin, position, modifiers)
-  if margin ~= 2 or modifiers ~= 0 then return end
-  M.toggle_breakpoint(nil, buffer:line_from_position(position))
+	if margin ~= 2 or modifiers ~= 0 then return end
+	M.toggle_breakpoint(nil, buffer:line_from_position(position))
 end)
 
 --- Refresh breakpoints after switching buffers and when refreshing buffer text.
 local function refresh_breakpoints()
-  local lang, file = get_lang(), buffer.filename
-  if not breakpoints[lang] or not breakpoints[lang][file] then return end
-  buffer:marker_delete_all(MARK_BREAKPOINT)
-  for line in pairs(breakpoints[lang][file]) do buffer:marker_add(line, MARK_BREAKPOINT) end
+	local lang, file = get_lang(), buffer.filename
+	if not breakpoints[lang] or not breakpoints[lang][file] then return end
+	buffer:marker_delete_all(MARK_BREAKPOINT)
+	for line in pairs(breakpoints[lang][file]) do buffer:marker_add(line, MARK_BREAKPOINT) end
 end
 events.connect(events.BUFFER_AFTER_SWITCH, refresh_breakpoints)
 events.connect(events.BUFFER_AFTER_REPLACE_TEXT, refresh_breakpoints)
@@ -778,55 +778,55 @@ events.connect(events.DWELL_END, view.call_tip_cancel)
 
 -- Save/restore breakpoints and watches over resets.
 events.connect(events.RESET_BEFORE, function(persist)
-  persist.debugger = {breakpoints = breakpoints, watches = watches}
+	persist.debugger = {breakpoints = breakpoints, watches = watches}
 end)
 events.connect(events.RESET_AFTER, function(persist)
-  breakpoints, watches = persist.debugger.breakpoints, persist.debugger.watches
+	breakpoints, watches = persist.debugger.breakpoints, persist.debugger.watches
 end)
 
 -- Set call stack frame on Enter or double-click.
 events.connect(events.KEYPRESS, function(key)
-  if key ~= '\n' or not is_cs_buf(buffer) then return end
-  M.set_frame(buffer:line_from_position(buffer.current_pos) - 1)
-  return true
+	if key ~= '\n' or not is_cs_buf(buffer) then return end
+	M.set_frame(buffer:line_from_position(buffer.current_pos) - 1)
+	return true
 end)
 events.connect(events.DOUBLE_CLICK,
-  function(_, line) if is_cs_buf(buffer) then M.set_frame(line - 1) end end)
+	function(_, line) if is_cs_buf(buffer) then M.set_frame(line - 1) end end)
 
 -- Add menu entries and configure key bindings.
 -- (Insert 'Debug' menu after 'Tools'.)
 local menubar = textadept.menu.menubar
 for i = 1, #menubar do
-  if menubar[i].title ~= _L['Tools'] then goto continue end
-  table.insert(menubar, i + 1, {
-    title = _L['Debug'], --
-    {_L['Go/Continue'], M.continue}, --
-    {_L['Step Over'], M.step_over}, --
-    {_L['Step Into'], M.step_into}, --
-    {_L['Step Out'], M.step_out}, --
-    {_L['Pause/Break'], M.pause}, --
-    {_L['Restart'], M.restart}, --
-    {_L['Stop'], M.stop}, --
-    {''}, --
-    {_L['Inspect'], M.inspect}, --
-    {_L['View Variables'], M.variables}, --
-    {_L['View Call Stack'], M.call_stack}, --
-    {_L['Set Call Stack Frame...'], M.set_frame}, {
-      _L['Evaluate...'], function()
-        -- TODO: command entry loses focus when run from select command dialog. This works fine
-        -- when run from menu directly.
-        local lang = get_lang()
-        if not states[lang] or states[lang].executing then return end
-        ui.command_entry.run(_L['Expression:'], M.evaluate, 'lua')
-      end
-    }, {''}, --
-    {_L['Toggle Breakpoint'], M.toggle_breakpoint}, --
-    {_L['Remove Breakpoint...'], M.remove_breakpoint}, --
-    {_L['Set Watch Expression'], M.set_watch}, --
-    {_L['Remove Watch Expression...'], M.remove_watch}
-  })
-  break
-  ::continue::
+	if menubar[i].title ~= _L['Tools'] then goto continue end
+	table.insert(menubar, i + 1, {
+		title = _L['Debug'], --
+		{_L['Go/Continue'], M.continue}, --
+		{_L['Step Over'], M.step_over}, --
+		{_L['Step Into'], M.step_into}, --
+		{_L['Step Out'], M.step_out}, --
+		{_L['Pause/Break'], M.pause}, --
+		{_L['Restart'], M.restart}, --
+		{_L['Stop'], M.stop}, --
+		{''}, --
+		{_L['Inspect'], M.inspect}, --
+		{_L['View Variables'], M.variables}, --
+		{_L['View Call Stack'], M.call_stack}, --
+		{_L['Set Call Stack Frame...'], M.set_frame}, {
+			_L['Evaluate...'], function()
+				-- TODO: command entry loses focus when run from select command dialog. This works fine
+				-- when run from menu directly.
+				local lang = get_lang()
+				if not states[lang] or states[lang].executing then return end
+				ui.command_entry.run(_L['Expression:'], M.evaluate, 'lua')
+			end
+		}, {''}, --
+		{_L['Toggle Breakpoint'], M.toggle_breakpoint}, --
+		{_L['Remove Breakpoint...'], M.remove_breakpoint}, --
+		{_L['Set Watch Expression'], M.set_watch}, --
+		{_L['Remove Watch Expression...'], M.remove_watch}
+	})
+	break
+	::continue::
 end
 keys.f5 = M.continue
 keys.f10 = M.step_over
@@ -839,17 +839,17 @@ keys.f9 = M.toggle_breakpoint
 
 -- Automatically load a language debugger when a file of that language is opened.
 events.connect(events.LEXER_LOADED, function(name)
-  if package.searchpath('debugger.' .. name, package.path) then require('debugger.' .. name) end
+	if package.searchpath('debugger.' .. name, package.path) then require('debugger.' .. name) end
 end)
 
 local orig_path, orig_cpath = package.path, package.cpath
 package.path = table.concat({
-  _HOME .. '/modules/debugger/lua/?.lua', _USERHOME .. '/modules/debugger/lua/?.lua', package.path
+	_HOME .. '/modules/debugger/lua/?.lua', _USERHOME .. '/modules/debugger/lua/?.lua', package.path
 }, ';')
 local so = not WIN32 and 'so' or 'dll'
 package.cpath = table.concat({
-  _HOME .. '/modules/debugger/lua/?.' .. so, _USERHOME .. '/modules/debugger/lua/?.' .. so,
-  package.cpath
+	_HOME .. '/modules/debugger/lua/?.' .. so, _USERHOME .. '/modules/debugger/lua/?.' .. so,
+	package.cpath
 }, ';')
 ---
 -- The LuaSocket module.
