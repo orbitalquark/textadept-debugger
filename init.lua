@@ -834,8 +834,7 @@ keys.f11 = M.step_into
 keys['shift+f11'] = M.step_out
 keys['shift+f5'] = M.stop
 keys[not CURSES and 'alt+=' or 'meta+='] = M.inspect
-local m_debug = textadept.menu.menubar[_L['Debug']]
-keys[not CURSES and 'alt++' or 'meta++'] = m_debug[_L['Evaluate...']][2]
+keys[not CURSES and 'alt++' or 'meta++'] = textadept.menu.menubar['Debug/Evaluate...'][2]
 keys.f9 = M.toggle_breakpoint
 
 -- Automatically load a language debugger when a file of that language is opened.
