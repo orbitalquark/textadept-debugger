@@ -116,7 +116,7 @@ end
 
 -- Starts the Delve debugger.
 -- Launches Delve in a separate process for a package in a project directory, passing any command
--- line arguments given.  If no package or project directory are given, they are inferred from
+-- line arguments given. If no package or project directory are given, they are inferred from
 -- the current Go file.
 events.connect(events.DEBUGGER_START, function(lang, root, package, args)
 	if lang ~= 'go' then return end

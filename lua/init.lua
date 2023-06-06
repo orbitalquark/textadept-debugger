@@ -37,7 +37,7 @@ local server, client, proc
 -- to keep Textadept responsive, use some coroutine and timeout tricks to keep MobDebug happy.
 -- @param action String MobDebug action to perform.
 -- @param callback Callback function to invoke when the action returns a result. Results are
---   passed to that function.
+--	passed to that function.
 local function handle(action, callback)
 	-- The client uses non-blocking reads. However, MobDebug expects data when it calls
 	-- `client:receive()`. This will not happen if there is no data to read. In order to have
@@ -78,7 +78,7 @@ local watches
 
 --- Computes current debugger state.
 -- @param level Level to get the state of. 1 is for the current function, 2 for the caller,
---   etc. The default value is 1.
+--	etc. The default value is 1.
 local function get_state(level)
 	if not client then return nil end
 	-- Fetch stack frames.
