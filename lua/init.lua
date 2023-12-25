@@ -1,4 +1,4 @@
--- Copyright 2007-2023 Mitchell. See LICENSE.
+-- Copyright 2007-2024 Mitchell. See LICENSE.
 
 --- Language debugging support for Lua.
 -- Requires LuaSocket to be installed for the external Lua interpreter invoked.

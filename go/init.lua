@@ -1,4 +1,4 @@
--- Copyright 2022-2023 Mitchell. See LICENSE.
+-- Copyright 2022-2024 Mitchell. See LICENSE.
 
 --- Language debugging support for Go.
 -- Requires Delve to be installed and 'dlv' to be available for `os.spawn()`.
