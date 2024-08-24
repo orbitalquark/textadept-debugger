@@ -1,0 +1,2 @@
+include = {'debugger'}
+exclude = {'_test', 'mobdebug', 'socket'}

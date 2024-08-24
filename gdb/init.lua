@@ -4,8 +4,8 @@
 -- @module debugger.ansi_c
 local M = {}
 
---- Whether or not to enable logging. Log messages are printed to stdout.
-M.logging = false
+--- Logger function. It should accept multiple values to log (e.g. `print()`).
+M.logger = nil
 
 local debugger = require('debugger')
 
@@ -29,9 +29,9 @@ end
 -- @return string command output
 local function run_command(cmd)
 	proc:write(cmd, '\n')
-	if M.logging then print(cmd) end
+	if M.logger then M.logger(cmd) end
 	local output = read_output()
-	if M.logging then print(output, '\n(gdb)') end
+	if M.logger then M.logger(output, '\n(gdb)') end
 	return output
 end
 
@@ -45,6 +45,7 @@ local function get_state()
 	-- Fetch the current frame information.
 	local output = run_command('-stack-info-frame')
 	if output:find('^^error') then
+		pid = nil
 		debugger.stop('ansi_c') -- program exited
 		return nil
 	end
@@ -91,8 +92,8 @@ events.connect(events.DEBUGGER_START, function(lang, exe, args, cwd, env)
 	if lang ~= 'gdb' or not exe then return end
 	args = {
 		string.format('gdb -interpreter mi2 --args %s %s', exe, args or ''),
-		cwd or exe:match('^.+[/\\]') or lfs.currentdir(), function(output)
-			if M.logging then print(output) end
+		cwd or exe:match('^(.+)[/\\]') or lfs.currentdir(), function(output)
+			if M.logger then M.logger(output) end
 			if output:find('%(gdb%)') then update_state() end
 		end
 	}
@@ -133,8 +134,9 @@ events.connect(events.DEBUGGER_PAUSE, function(lang)
 	os.execute('kill -2 ' .. pid) -- SIGINT
 	return true -- successfully paused
 end)
-events.connect(events.DEBUGGER_RESTART,
-	function(lang) if lang == 'gdb' then run_command('-exec-run') end end)
+events.connect(events.DEBUGGER_RESTART, function(lang)
+	if lang == 'gdb' then pid = run_command('-exec-run'):match('pid="(%d+)"') end
+end)
 
 -- Stops the gdb debugger.
 events.connect(events.DEBUGGER_STOP, function(lang)

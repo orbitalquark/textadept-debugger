@@ -7,8 +7,8 @@
 -- @module debugger.lua
 local M = {}
 
---- Whether or not to enable logging. Log messages are printed to stdout.
-M.logging = false
+--- Logger function. It should accept multiple values to log (e.g. `print()`).
+M.logger = nil
 --- Whether or not to show _ENV in the variable list.
 -- The default value is `false`.
 M.show_ENV = false
@@ -161,7 +161,7 @@ events.connect(events.DEBUGGER_START, function(lang, filename, args, timeout)
 			[[-e "require('mobdebug').start()"]], string.format('%q', filename), args
 		}
 		local cmd = textadept.run.run_commands.lua:gsub('([\'"]?)%%f%1', table.concat(arg, ' '))
-		proc = assert(os.spawn(cmd, filename:match('^.+[/\\]'), ui.output, ui.output))
+		proc = assert(os.spawn(cmd, filename:match('^(.+)[/\\]')))
 	end
 	client = assert(server:accept(), 'failed to establish debug connection')
 	client:settimeout(0) -- non-blocking reads

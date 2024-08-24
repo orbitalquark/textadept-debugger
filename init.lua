@@ -256,9 +256,12 @@ if not rawget(_L, 'Remove Breakpoint') then
 	_L['Remove Watch Expression...'] = 'Remove Watch E_xpression...'
 end
 
-local MARK_BREAKPOINT = _SCINTILLA.new_marker_number()
-local MARK_DEBUGLINE = _SCINTILLA.new_marker_number()
-local MARK_CALLSTACK = _SCINTILLA.new_marker_number()
+--- The marker number for breakpoints.
+M.MARK_BREAKPOINT = view.new_marker_number()
+--- The marker number for the current debug line.
+M.MARK_DEBUGLINE = view.new_marker_number()
+--- The marker number for the current call stack line.
+M.MARK_CALLSTACK = view.new_marker_number()
 
 --- Whether or not to use debug status buffers like variables, call stack, etc.
 M.use_status_buffers = true
@@ -323,7 +326,7 @@ local function set_breakpoint(file, line)
 	if not breakpoints[lang] then breakpoints[lang] = {} end
 	if not breakpoints[lang][file] then breakpoints[lang][file] = {} end
 	breakpoints[lang][file][line] = true
-	if file == buffer.filename then buffer:marker_add(line, MARK_BREAKPOINT) end
+	if file == buffer.filename then buffer:marker_add(line, M.MARK_BREAKPOINT) end
 	if not states[lang] then return end -- not debugging
 	events.emit(events.DEBUGGER_BREAKPOINT_ADDED, lang, file, line)
 end
@@ -363,7 +366,7 @@ function M.remove_breakpoint(file, line)
 	end
 	if breakpoints[lang] and breakpoints[lang][file] then
 		breakpoints[lang][file][line] = nil
-		if file == buffer.filename then buffer:marker_delete(line, MARK_BREAKPOINT) end
+		if file == buffer.filename then buffer:marker_delete(line, M.MARK_BREAKPOINT) end
 		if not states[lang] then return end -- not debugging
 		events.emit(events.DEBUGGER_BREAKPOINT_REMOVED, lang, file, line)
 	end
@@ -535,7 +538,7 @@ function M.continue(lang, ...)
 			if not M.start(table.unpack(args)) then return end
 		end
 	end
-	buffer:marker_delete_all(MARK_DEBUGLINE)
+	buffer:marker_delete_all(M.MARK_DEBUGLINE)
 	states[lang].executing = true
 	events.emit(events.DEBUGGER_CONTINUE, lang, ...)
 end
@@ -548,7 +551,7 @@ function M.step_into(...)
 	local lang = get_lang()
 	if states[lang] and states[lang].executing then return end
 	if not states[lang] and not M.start(lang) then return end
-	buffer:marker_delete_all(MARK_DEBUGLINE)
+	buffer:marker_delete_all(M.MARK_DEBUGLINE)
 	states[lang].executing = true
 	events.emit(events.DEBUGGER_STEP_INTO, lang, ...)
 end
@@ -561,7 +564,7 @@ function M.step_over(...)
 	local lang = get_lang()
 	if states[lang] and states[lang].executing then return end
 	if not states[lang] and not M.start(lang) then return end
-	buffer:marker_delete_all(MARK_DEBUGLINE)
+	buffer:marker_delete_all(M.MARK_DEBUGLINE)
 	states[lang].executing = true
 	events.emit(events.DEBUGGER_STEP_OVER, lang, ...)
 end
@@ -572,7 +575,7 @@ end
 function M.step_out(...)
 	local lang = get_lang()
 	if not states[lang] or states[lang].executing then return end
-	buffer:marker_delete_all(MARK_DEBUGLINE)
+	buffer:marker_delete_all(M.MARK_DEBUGLINE)
 	states[lang].executing = true
 	events.emit(events.DEBUGGER_STEP_OUT, lang, ...)
 end
@@ -602,7 +605,7 @@ function M.stop(lang, ...)
 	lang = get_lang(lang)
 	if not states[lang] then return end -- not debugging
 	events.emit(events.DEBUGGER_STOP, lang, ...)
-	buffer:marker_delete_all(MARK_DEBUGLINE)
+	buffer:marker_delete_all(M.MARK_DEBUGLINE)
 	states[lang] = nil
 	for _, buffer in ipairs(_BUFFERS) do
 		if buffer._type == _L['[Variables]'] or buffer._type == _L['[Call Stack]'] then
@@ -643,8 +646,8 @@ function M.update_state(state)
 	if state.file ~= buffer.filename then
 		ui.goto_file(state.file:iconv('UTF-8', _CHARSET), false, view)
 	end
-	buffer:marker_delete_all(MARK_DEBUGLINE)
-	buffer:marker_add(state.line, MARK_DEBUGLINE)
+	buffer:marker_delete_all(M.MARK_DEBUGLINE)
+	buffer:marker_add(state.line, M.MARK_DEBUGLINE)
 	buffer:goto_line(state.line)
 	textadept.history.record()
 end
@@ -674,7 +677,7 @@ function M.variables()
 			buffer:marker_add(1 + i, textadept.bookmarks.MARK_BOOKMARK)
 		end
 		if prev_variables[name] ~= nil and value ~= prev_variables[name] then
-			buffer:marker_add(1 + i, MARK_BREAKPOINT) -- recycle this marker
+			buffer:marker_add(1 + i, M.MARK_BREAKPOINT) -- recycle this marker
 		end
 	end
 	buffer:empty_undo_buffer()
@@ -692,7 +695,7 @@ function M.call_stack()
 	buffer:set_text(_L['Call Stack'] .. '\n')
 	local call_stack = states[lang].call_stack
 	for i = 1, #call_stack do buffer:append_text(call_stack[i] .. '\n') end
-	buffer:marker_add(1 + (call_stack.pos or 1), MARK_CALLSTACK)
+	buffer:marker_add(1 + (call_stack.pos or 1), M.MARK_CALLSTACK)
 	buffer:empty_undo_buffer()
 	buffer:set_save_point()
 end
@@ -713,9 +716,9 @@ function M.set_frame(level)
 		local button
 		level, button = ui.dialogs.list{
 			title = _L['Call Stack'], items = call_stack, select = call_stack.pos or 1,
-			button1 = _L['OK'], button2 = _L['Set Frame'], return_button = true
+			button1 = _L['Set Frame'], button2 = _L['Cancel'], return_button = true
 		}
-		if button ~= 2 then return end
+		if button ~= 1 then return end
 	elseif level < 1 or level > #call_stack then
 		level = math.max(1, math.min(#call_stack, level))
 	end
@@ -744,15 +747,15 @@ end
 --- Sets view properties for debug markers.
 local function set_marker_properties()
 	view.mouse_dwell_time = 500
-	view:marker_define(MARK_BREAKPOINT, view.MARK_FULLRECT)
-	view:marker_define(MARK_DEBUGLINE, view.MARK_FULLRECT)
-	view:marker_define(MARK_CALLSTACK, view.MARK_FULLRECT)
-	view.marker_back[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_COLOR
-	-- view.marker_alpha[MARK_BREAKPOINT] = M.MARK_BREAKPOINT_ALPHA
-	view.marker_back[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_COLOR
-	-- view.marker_alpha[MARK_DEBUGLINE] = M.MARK_DEBUGLINE_ALPHA
-	view.marker_back[MARK_CALLSTACK] = M.MARK_CALLSTACK_COLOR
-	-- view.marker_alpha[MARK_CALLSTACK] = M.MARK_CALLSTACK_ALPHA
+	view:marker_define(M.MARK_BREAKPOINT, view.MARK_FULLRECT)
+	view:marker_define(M.MARK_DEBUGLINE, view.MARK_FULLRECT)
+	view:marker_define(M.MARK_CALLSTACK, view.MARK_FULLRECT)
+	view.marker_back[M.MARK_BREAKPOINT] = M.MARK_BREAKPOINT_COLOR
+	-- view.marker_alpha[M.MARK_BREAKPOINT] = M.MARK_BREAKPOINT_ALPHA
+	view.marker_back[M.MARK_DEBUGLINE] = M.MARK_DEBUGLINE_COLOR
+	-- view.marker_alpha[M.MARK_DEBUGLINE] = M.MARK_DEBUGLINE_ALPHA
+	view.marker_back[M.MARK_CALLSTACK] = M.MARK_CALLSTACK_COLOR
+	-- view.marker_alpha[M.MARK_CALLSTACK] = M.MARK_CALLSTACK_ALPHA
 end
 events.connect(events.VIEW_NEW, set_marker_properties)
 
@@ -766,8 +769,8 @@ end)
 local function refresh_breakpoints()
 	local lang, file = get_lang(), buffer.filename
 	if not breakpoints[lang] or not breakpoints[lang][file] then return end
-	buffer:marker_delete_all(MARK_BREAKPOINT)
-	for line in pairs(breakpoints[lang][file]) do buffer:marker_add(line, MARK_BREAKPOINT) end
+	buffer:marker_delete_all(M.MARK_BREAKPOINT)
+	for line in pairs(breakpoints[lang][file]) do buffer:marker_add(line, M.MARK_BREAKPOINT) end
 end
 events.connect(events.BUFFER_AFTER_SWITCH, refresh_breakpoints)
 events.connect(events.BUFFER_AFTER_REPLACE_TEXT, refresh_breakpoints)
