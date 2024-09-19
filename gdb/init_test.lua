@@ -3,7 +3,7 @@
 local debugger = require('debugger')
 require('debugger.gdb').logger = test.log
 
-setup(function() buffer:set_lexer('ansi_c') end) -- for debugger.toggle_breakpoint(file, line)
+setup(function() buffer:set_lexer('c') end) -- for debugger.toggle_breakpoint(file, line)
 
 teardown(debugger.stop)
 

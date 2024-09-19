@@ -23,7 +23,7 @@
 --
 --	local debugger = require('debugger')
 --	debugger.project_commands['/path/to/project'] = function()
---		return 'ansi_c', '/path/to/exe', 'command line args'
+--		return 'c', '/path/to/exe', 'command line args'
 --	end
 --
 -- Textadept can debug another instance of [itself][1].
@@ -272,9 +272,9 @@ M.project_commands = {}
 
 --- Map of lexer languages to debugger modules.
 -- This is for debugger modules that support more than one language (e.g. the gdb module supports
--- 'ansi_c' and 'cpp'). Otherwise, a debugger module should be named after the lexer language
+-- 'c' and 'cpp'). Otherwise, a debugger module should be named after the lexer language
 -- it debugs and an alias is not necessary.
-M.aliases = {ansi_c = 'gdb', cpp = 'gdb'}
+M.aliases = {c = 'gdb', cpp = 'gdb'}
 
 --- Map of lexers to breakpoints.
 local breakpoints = {}

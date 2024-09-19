@@ -1,7 +1,7 @@
 -- Copyright 2007-2024 Mitchell. See LICENSE.
 
 --- Language debugging support for C and C++.
--- @module debugger.ansi_c
+-- @module debugger.c
 local M = {}
 
 --- Logger function. It should accept multiple values to log (e.g. `print()`).
@@ -46,7 +46,7 @@ local function get_state()
 	local output = run_command('-stack-info-frame')
 	if output:find('^^error') then
 		pid = nil
-		debugger.stop('ansi_c') -- program exited
+		debugger.stop('c') -- program exited
 		return nil
 	end
 	local level = tonumber(output:match('level="(%d+)"') or 0)
