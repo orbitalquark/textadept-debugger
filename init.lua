@@ -1,4 +1,4 @@
--- Copyright 2007-2024 Mitchell. See LICENSE.
+-- Copyright 2007-2025 Mitchell. See LICENSE.
 
 --- Language debugging support for Textadept.
 --
