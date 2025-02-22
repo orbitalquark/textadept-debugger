@@ -1,12 +1,16 @@
 --- a/src/socket.lua	2021-02-14 16:11:00.198125139 -0500
 +++ b/src/socket.lua	2021-02-14 16:12:20.958616941 -0500
-@@ -9,7 +9,9 @@
+@@ -9,7 +9,13 @@
  local base = _G
  local string = require("string")
  local math = require("math")
 -local socket = require("socket.core")
 +local lib = 'socket.core'
-+if OSX then lib = lib .. 'osx' end
++if OSX then
++    lib = lib .. 'osx'
++elseif LINUX and io.popen('uname -m'):read() == 'aarch64' then
++    lib = lib .. 'arm'
++end
 +local socket = require(lib)
  
  local _M = socket
@@ -22,12 +26,15 @@
      int ret = lua_gettop(L) - amount - 1;
      return ret >= 0 ? ret : 0;
  }
-@@ -124,3 +124,7 @@
+@@ -124,3 +124,10 @@
      for (i = 0; mod[i].name; i++) mod[i].func(L);
      return 1;
  }
 +
 +LUASOCKET_API int luaopen_socket_coreosx(lua_State *L) {
++    return luaopen_socket_core(L);
++}
++LUASOCKET_API int luaopen_socket_corearm(lua_State *L) {
 +    return luaopen_socket_core(L);
 +}
 --- a/src/luasocket.h	2022-01-06 14:56:30.000000000 -0500
