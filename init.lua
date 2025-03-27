@@ -1,14 +1,15 @@
 -- Copyright 2007-2025 Mitchell. See LICENSE.
 
 --- Language debugging support for Textadept.
---
 -- All this module does is emit debugger events. Submodules that implement debuggers listen
 -- for these events and act on them.
 --
 -- Install this module by copying it into your *~/.textadept/modules/* directory or Textadept's
 -- *modules/* directory, and then putting the following in your *~/.textadept/init.lua*:
 --
---	require('debugger')
+-- ```lua
+-- local debugger = require('debugger')
+-- ```
 --
 -- There will be a top-level "Debug" menu.
 --
@@ -21,26 +22,30 @@
 -- Project-specific debugging is configured using the `debugger.project_commands` table. For
 -- example, in order to use this module to debug a C program via GDB:
 --
---	local debugger = require('debugger')
---	debugger.project_commands['/path/to/project'] = function()
---		return 'c', '/path/to/exe', 'command line args'
---	end
+-- ```lua
+-- local debugger = require('debugger')
+-- debugger.project_commands['/path/to/project'] = function()
+-- 	return 'c', '/path/to/exe', 'command line args'
+-- end
+-- ```
 --
 -- Textadept can debug another instance of [itself][1].
 --
 -- [LuaSocket]: http://w3.impa.br/~diego/software/luasocket/
 -- [1]: https://github.com/orbitalquark/.textadept/blob/4c936361d45fa8f99e16df0d71fc9306bee216bc/init.lua#L179
 --
--- ### Compiling
+-- ## Compiling
 --
 -- Releases include binaries, so building this modules should not be necessary. If you want
 -- to build manually, use CMake. For example:
 --
---	cmake -S . -B build_dir
---	cmake --build build_dir
---	cmake --install build_dir
+-- ```bash
+-- cmake -S . -B build_dir
+-- cmake --build build_dir
+-- cmake --install build_dir
+-- ```
 --
--- ### Key Bindings
+-- ## Key Bindings
 --
 -- Windows and Linux | macOS | Terminal | Command
 -- -|-|-|-
@@ -64,8 +69,8 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 --- Emitted when a breakpoint is added.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
 -- Breakpoints added while the debugger is not running are queued up until the debugger starts.
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language to add a breakpoint for.
 -- - *filename*: The filename to add a breakpoint in.
 -- - *line*: The 1-based line number to break on.
@@ -73,8 +78,8 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 
 --- Emitted when a breakpoint is removed.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *filename*: The filename to remove a breakpoint from.
 -- - *line*: The 1-based line number to stop breaking on.
@@ -83,8 +88,8 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 --- Emitted when a watch is added.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint). Watches
 -- added while the debugger is not running are queued up until the debugger starts.
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language to add a watch for.
 -- - *expr*: The expression or variable to watch, depending on what the debugger supports.
 -- - *id*: The expression's ID number.
@@ -93,8 +98,8 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 
 --- Emitted when a watch is removed.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *expr*: The expression to stop watching.
 -- - *id*: The expression's ID number.
@@ -106,40 +111,40 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 -- If a listener creates a debugger, it *must* return `true`. Otherwise, it is assumed that no
 -- debugger was created and subsequent debugger functions will not work. Listeners *must not*
 -- return `false` (they can return `nil`).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language to start debugging.
 -- - *...*: Any arguments passed to `debugger.start()`.
 -- @field _G.events.DEBUGGER_START (string)
 
 --- Emitted when a execution should be continued.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *...*: Any arguments passed to `debugger.continue()`.
 -- @field _G.events.DEBUGGER_CONTINUE (string)
 
 --- Emitted when execution should continue by one line, stepping into functions.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *...*: Any arguments passed to `debugger.step_into()`.
 -- @field _G.events.DEBUGGER_STEP_INTO (string)
 
 --- Emitted when execution should continue by one line, stepping over functions.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *...*: Any arguments passed to `debugger.step_over()`.
 -- @field _G.events.DEBUGGER_STEP_OVER (string)
 
 --- Emitted when execution should continue, stepping out of the current function.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *...*: Any arguments passed to `debugger.step_out()`.
 -- @field _G.events.DEBUGGER_STEP_OUT (string)
@@ -148,32 +153,32 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 -- This is only emitted when the debugger is running and executing (e.g. not at a breakpoint).
 -- If a listener pauses the debugger, it *must* return `true`. Otherwise, it is assumed that
 -- debugger could not be paused. Listeners *must not* return `false` (they can return `nil`).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *...*: Any arguments passed to `debugger.pause()`.
 -- @field _G.events.DEBUGGER_PAUSE (string)
 
 --- Emitted when execution should restart from the beginning.
 -- This is only emitted when the debugger is running.
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *...*: Any arguments passed to `debugger.restart()`.
 -- @field _G.events.DEBUGGER_RESTART (string)
 
 --- Emitted when a debugger should be stopped.
 -- This is only emitted when the debugger is running.
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language to stop debugging.
 -- - *...*: Any arguments passed to `debugger.stop()`.
 -- @field _G.events.DEBUGGER_STOP (string)
 
 --- Emitted when a stack frame should be switched to.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *level*: The 1-based stack level number to switch to. This value depends on the stack
 --	levels given to `debugger.update_state()`.
@@ -182,8 +187,8 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 --- Emitted when a symbol should be inspected.
 -- Debuggers typically show a symbol's value in a calltip via `view:call_tip_show()`.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *position*: The buffer position of the symbol to inspect. The debugger is responsible for
 --	identifying the symbol's name, as symbol characters vary from language to language.
@@ -191,8 +196,8 @@ for _, v in ipairs(debugger_events) do events[v:upper()] = v end
 
 --- Emitted when a debugger command should be run.
 -- This is only emitted when the debugger is running and paused (e.g. at a breakpoint).
--- Arguments:
 --
+-- Arguments:
 -- - *lang*: The lexer name of the language being debugged.
 -- - *text*: The text of the command to run.
 -- @field _G.events.DEBUGGER_COMMAND (string)
@@ -263,11 +268,13 @@ M.MARK_DEBUGLINE = view.new_marker_number()
 --- The marker number for the current call stack line.
 M.MARK_CALLSTACK = view.new_marker_number()
 
---- Whether or not to use debug status buffers like variables, call stack, etc.
+--- Use debug status buffers like variables, call stack, etc.
+-- The default value is `true`.
 M.use_status_buffers = true
 
 --- Map of project root directories to functions that return the language of the debugger to
 -- start followed by the arguments to pass to that debugger's `events.DEBUGGER_START` handler.
+-- @usage debugger.project_commands['/path/to/project'] = 'gdb /path/to/exe'
 M.project_commands = {}
 
 --- Map of lexer languages to debugger modules.
@@ -285,9 +292,9 @@ local watches = {}
 --- Map of lexers to debug states.
 local states = {}
 
---- Returns the debugger module associated with the given lexer language or the current lexer
--- language.
--- @param lang Optional lexer language to get the debugger module for.
+--- Returns the debugger module associated with a lexer language.
+-- @param[opt] lang String lexer language to get the debugger module for. If `nil`, the current
+--	lexer language is used.
 -- @see aliases
 local function get_lang(lang)
 	if not lang then lang = buffer.lexer_language end
@@ -310,13 +317,14 @@ local function notify_executing(title)
 	}
 end
 
---- Sets a breakpoint in file *file* on line number *line*.
+--- Sets a breakpoint.
 -- Emits `events.DEBUGGER_BREAKPOINT_ADDED` if the debugger is running, or queues up the event
 -- to run in `debugger.start()`.
+--
 -- If the debugger is executing (e.g. not at a breakpoint), assumes a breakpoint cannot be set
 -- and shows an error message.
--- @param file Filename to set the breakpoint in.
--- @param line The 1-based line number to break on.
+-- @param file String filename to set the breakpoint in.
+-- @param line Line number starting from 1 to break on.
 local function set_breakpoint(file, line)
 	local lang = get_lang()
 	if states[lang] and states[lang].executing then
@@ -331,13 +339,14 @@ local function set_breakpoint(file, line)
 	events.emit(events.DEBUGGER_BREAKPOINT_ADDED, lang, file, line)
 end
 
---- Removes a breakpoint from line number *line* in file *file*, or prompts the user for a
--- breakpoint(s) to remove.
+--- Removes a breakpoint from a line.
 -- Emits `events.DEBUGGER_BREAKPOINT_REMOVED` if the debugger is running.
+--
 -- If the debugger is executing (e.g. not at a breakpoint), assumes a breakpoint cannot be
 -- removed and shows an error message.
--- @param file Optional filename of the breakpoint to remove.
--- @param line Optional 1-based line number of the breakpoint to remove.
+-- @param[opt=buffer.filename] file String filename of the breakpoint to remove.
+-- @param[optchain] line Line number starting from 1 of the breakpoint to remove. If `nil`,
+--	user is prompted for a breakpoint(s) to remove.
 function M.remove_breakpoint(file, line)
 	local lang = get_lang()
 	if states[lang] and states[lang].executing then
@@ -372,13 +381,14 @@ function M.remove_breakpoint(file, line)
 	end
 end
 
---- Toggles a breakpoint on line number *line* in file *file*, or the current line in the
--- current file.
+--- Toggles a breakpoint.
 -- May emit `events.DEBUGGER_BREAKPOINT_ADDED` and `events.DEBUGGER_BREAKPOINT_REMOVED` depending
 -- on circumstance.
+--
 -- May show an error message if the debugger is executing (e.g. not at a breakpoint).
--- @param file Optional filename of the breakpoint to toggle.
--- @param line Optional 1-based line number of the breakpoint to toggle.
+-- @param[opt=buffer.filename] file String filename of the breakpoint to toggle.
+-- @param[optchain] line Line number starting from 1 of the breakpoint to toggle. If `nil`,
+--	the current line is used.
 function M.toggle_breakpoint(file, line)
 	local lang = get_lang()
 	if not file then file = buffer.filename end
@@ -391,15 +401,14 @@ function M.toggle_breakpoint(file, line)
 	end
 end
 
---- Watches string expression *expr* for changes and breaks on each change unless *no_break* is
--- `true`.
+--- Watches an expression for changes and breaks on each change.
 -- Emits `events.DEBUGGER_WATCH_ADDED` if the debugger is running, or queues up the event to
 -- run in `debugger.start()`.
+--
 -- If the debugger is executing (e.g. not at a breakpoint), assumes a watch cannot be set and
 -- shows an error message.
 -- @param expr String expression to watch.
--- @param no_break Whether to just watch the expression and not break on changes. The default
---	value is `false`.
+-- @param[opt=false] no_break Just watch the expression and not break on changes.
 function M.set_watch(expr, no_break)
 	local lang = get_lang()
 	if states[lang] and states[lang].executing then
@@ -423,11 +432,13 @@ function M.set_watch(expr, no_break)
 	events.emit(events.DEBUGGER_WATCH_ADDED, lang, expr, watch_exprs.n, no_break)
 end
 
---- Stops watching the expression identified by *id*, or the expression selected by the user.
+--- Stops watching an expression.
 -- Emits `events.DEBUGGER_WATCH_REMOVED` if the debugger is running.
+--
 -- If the debugger is executing (e.g. not at a breakpoint), assumes a watch cannot be set and
 -- shows an error message.
--- @param id ID number of the expression, as given in the `events.DEBUGGER_WATCH_ADDED` event.
+-- @param[opt] id ID number of the expression, as given in the `events.DEBUGGER_WATCH_ADDED`
+--	event. If `nil`, the user is prompted for one.
 function M.remove_watch(id)
 	local lang = get_lang()
 	if states[lang] and states[lang].executing then
@@ -464,9 +475,10 @@ end
 --- Starts a debugger and adds any queued breakpoints and watches.
 -- Emits `events.DEBUGGER_START`, passing along any arguments given. If a debugger cannot be
 -- started, the event handler should throw an error.
+--
 -- This only starts a debugger. `debugger.continue()`, `debugger.step_into()`, or
 -- `debugger.step_over()` should be called next to begin debugging.
--- @param lang Optional lexer name of the language to start debugging. The default value is
+-- @param[opt] lang String lexer name of the language to start debugging. The default value is
 --	the name of the current lexer.
 -- @return whether or not a debugger was started
 function M.start(lang, ...)
@@ -519,10 +531,11 @@ end
 
 --- Continue debugger execution unless the debugger is already executing (e.g. not at a
 -- breakpoint).
--- If no debugger is running, starts one, then continues execution.
+-- If no debugger is running, this will start one and then continue execution.
+--
 -- Emits `events.DEBUGGER_CONTINUE`, passing along any arguments given.
--- @param lang Optional lexer name of the language to continue executing. The default value is
---	the name of the current lexer.
+-- @param[opt] lang String lexer name of the language to continue executing. The default value
+--	is the name of the current lexer.
 function M.continue(lang, ...)
 	lang = get_lang(lang)
 	if states[lang] and states[lang].executing then return end
@@ -545,7 +558,8 @@ end
 
 --- Continue debugger execution by one line, stepping into functions, unless the debugger is
 -- already executing (e.g. not at a breakpoint).
--- If no debugger is running, starts one, then steps.
+-- If no debugger is running, this will start one and then step.
+--
 -- Emits `events.DEBUGGER_STEP_INTO`, passing along any arguments given.
 function M.step_into(...)
 	local lang = get_lang()
@@ -558,7 +572,8 @@ end
 
 --- Continue debugger execution by one line, stepping over functions, unless the debugger is
 -- already executing (e.g. not at a breakpoint).
--- If no debugger is running, starts one, then steps.
+-- If no debugger is running, this will starts one and then step.
+--
 -- Emits `events.DEBUGGER_STEP_OVER`, passing along any arguments given.
 function M.step_over(...)
 	local lang = get_lang()
@@ -598,9 +613,10 @@ end
 
 --- Stops debugging.
 -- Debuggers should call this function when finished.
+--
 -- Emits `events.DEBUGGER_STOP`, passing along any arguments given.
--- @param lang Optional lexer name of the language to stop debugging. The default value is the
---	name of the current lexer.
+-- @param lang[opt] String lexer name of the language to stop debugging. The default value is
+--	the name of the current lexer.
 function M.stop(lang, ...)
 	lang = get_lang(lang)
 	if not states[lang] then return end -- not debugging
@@ -626,7 +642,7 @@ end
 --- Updates the running debugger's state and marks the current debug line.
 -- Debuggers need to call this function every time their state changes, typically during
 -- `DEBUGGER_*` events.
--- @param state A table with four fields: `file`, `line`, `call_stack`, and `variables`. `file` and
+-- @param state Table with four fields: `file`, `line`, `call_stack`, and `variables`. `file` and
 --	`line` indicate the debugger's current position. `call_stack` is a list of stack frames
 --	and a `pos` field whose value is the 1-based index of the current frame. `variables`
 --	is an optional map of known variables and watches to their values. The debugger can
@@ -706,7 +722,7 @@ local function is_cs_buf(buf) return buffer._type == _L['[Call Stack]'] end
 --- Prompts the user to select a stack frame to switch to from the current debugger call stack,
 -- unless the debugger is executing (e.g. not at a breakpoint).
 -- Emits `events.DEBUGGER_SET_FRAME`.
--- @param level Optional 1-based stack frame index to switch to.
+-- @param[opt] level Stack frame index starting from 1 to switch to.
 function M.set_frame(level)
 	if is_cs_buf(buffer) then ui.goto_view(buffer._debug_view) end
 	local lang = get_lang()
@@ -725,7 +741,7 @@ function M.set_frame(level)
 	events.emit(events.DEBUGGER_SET_FRAME, lang, tonumber(level))
 end
 
---- Evaluates string *text* in the current debugger context if the debugger is paused.
+--- Evaluates text in the current debugger context if the debugger is paused.
 -- The result (if any) is not returned, but likely printed to the message buffer.
 -- @param text String text to evaluate.
 function M.evaluate(text)
@@ -734,10 +750,10 @@ function M.evaluate(text)
 	events.emit(events.DEBUGGER_COMMAND, lang, assert_type(text, 'string', 1))
 end
 
---- Inspects the symbol (if any) at buffer position *position*, unless the debugger is executing
--- (e.g. not at a breakpoint).
+--- Inspects the symbol (if any) at a buffer position, unless the debugger is executing (e.g. not
+-- at a breakpoint).
 -- Emits `events.DEBUGGER_INSPECT`.
--- @param position The buffer position to inspect.
+-- @param position Position to inspect.
 function M.inspect(position)
 	local lang = get_lang()
 	if not states[lang] or states[lang].executing then return end

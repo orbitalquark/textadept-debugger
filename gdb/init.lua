@@ -23,7 +23,7 @@ local function read_output()
 	return table.concat(output, '\n')
 end
 
---- Runs the gdb command *cmd* and returns its output.
+--- Runs a gdb command.
 -- The returned output may contain unrelated asynchronous output (out of band records).
 -- @param cmd String gdb command to run.
 -- @return string command output

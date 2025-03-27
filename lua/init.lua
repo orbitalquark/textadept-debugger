@@ -9,7 +9,7 @@ local M = {}
 
 --- Logger function. It should accept multiple values to log (e.g. `print()`).
 M.logger = nil
---- Whether or not to show _ENV in the variable list.
+--- Show _ENV in the variable list.
 -- The default value is `false`.
 M.show_ENV = false
 --- The rough maximum length of variable values displayed in the variable list.
@@ -31,8 +31,8 @@ package.path, package.cpath = orig_path, orig_cpath
 
 local server, client, proc
 
---- Invokes MobDebug to perform a debugger action, and then executes the given callback function
--- with the results.
+--- Invokes MobDebug to perform a debugger action, and then executes a callback function with
+-- the results.
 -- Since communication happens over sockets, and since socket reads are non-blocking in order
 -- to keep Textadept responsive, use some coroutine and timeout tricks to keep MobDebug happy.
 -- @param action String MobDebug action to perform.

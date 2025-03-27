@@ -5,10 +5,12 @@
 -- @module debugger.go
 local M = {}
 
---- Whether or not to enable logging. Log messages are printed to stdout.
+--- Enable logging, which prints log messages to stdout.
+-- The default value is `true`.
 M.logging = true
---- Whether or not to enable logging of JSON RPC messages sent to and received from Delve.
+--- Enable logging of JSON RPC messages sent to and received from Delve.
 -- Log messages are printed to stdout.
+-- The default value is `true`.
 M.log_rpc = true
 
 if not rawget(_L, 'No project root found') then
@@ -42,8 +44,8 @@ local escaped = {['\t'] = '\\t', ['\r'] = '\\r', ['\n'] = '\\n'}
 
 --- Returns the value of the given variable as a pretty-printed string.
 -- @param variable Variable to pretty-print.
--- @param multi_line Whether or not to print on multiple lines. The default value is `false`.
--- @param indent_level Internal level of indentation for multi-line printing.
+-- @param[opt=false] multi_line Print on multiple lines.
+-- @param[optchain] indent_level Internal level of indentation for multi-line printing.
 local function pretty_print(variable, multi_line, indent_level)
 	if not indent_level then indent_level = 0 end
 	local value
