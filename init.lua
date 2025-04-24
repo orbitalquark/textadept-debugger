@@ -55,8 +55,8 @@
 -- F11 | F11 | F11 | Step into
 -- Shift+F11 | ⇧F11 | S-F11 | Step out
 -- Shift+F5 | ⇧F5 | S-F5 | Stop debugging
--- Alt+= | ⌘= | M-= | Inspect variable
--- Alt++ | ⌘+ | M-+ | Evaluate expression...
+-- Alt+= | ⌥= | M-= | Inspect variable
+-- Alt++ | ⌥+ | M-+ | Evaluate expression...
 -- @module debugger
 local M = {}
 
@@ -847,14 +847,17 @@ for i = 1, #menubar do
 	break
 	::continue::
 end
-keys.f5 = M.continue
-keys.f10 = M.step_over
-keys.f11 = M.step_into
-keys['shift+f11'] = M.step_out
-keys['shift+f5'] = M.stop
-keys[not CURSES and 'alt+=' or 'meta+='] = M.inspect
-keys[not CURSES and 'alt++' or 'meta++'] = textadept.menu.menubar['Debug/Evaluate...'][2]
-keys.f9 = M.toggle_breakpoint
+
+keys.assign_platform_bindings{
+	[M.continue] = {'f5', 'f5', 'f5'}, --
+	[M.step_over] = {'f10', 'f10', 'f10'}, --
+	[M.step_into] = {'f11', 'f11', 'f11'}, --
+	[M.step_out] = {'shift+f11', 'shift+f11', 'shift+f11'},
+	[M.stop] = {'shift+f5', 'shift+f5', 'shift+f5'}, --
+	[M.inspect] = {'alt+=', 'alt+=', 'meta+='},
+	[textadept.menu.menubar['Debug/Evaluate...'][2]] = {'alt++', 'alt++', 'meta++'},
+	[M.toggle_breakpoint] = {'f9', 'f9', 'f9'}
+}
 
 -- Automatically load a language debugger when a file of that language is opened.
 events.connect(events.LEXER_LOADED, function(name)

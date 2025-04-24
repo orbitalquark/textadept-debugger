@@ -56,8 +56,8 @@ F10 | F10 | F10 | Step over
 F11 | F11 | F11 | Step into
 Shift+F11 | ⇧F11 | S-F11 | Step out
 Shift+F5 | ⇧F5 | S-F5 | Stop debugging
-Alt+= | ⌘= | M-= | Inspect variable
-Alt++ | ⌘+ | M-+ | Evaluate expression...
+Alt+= | ⌥= | M-= | Inspect variable
+Alt++ | ⌥+ | M-+ | Evaluate expression...
 
 <a id="debugger.MARK_BREAKPOINT"></a>
 ## `debugger.MARK_BREAKPOINT`
@@ -270,7 +270,6 @@ This is for debugger modules that support more than one language (e.g. the gdb m
 it debugs and an alias is not necessary.
 
 Fields:
-
 - `c`: 
 - `cpp`: 
 
