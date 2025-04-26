@@ -416,13 +416,14 @@ function M.set_watch(expr, no_break)
 		return
 	end
 	if not expr then
-		local button
-		expr, button = ui.dialogs.input{
-			title = _L['Set Watch Expression:'], button1 = _L['Watch and Break'],
-			button2 = _L['Watch Only'], button3 = _L['Cancel'], return_button = true
+		expr = ui.dialogs.input{title = _L['Set Watch Expression:']}
+		if not expr or expr == '' then return end
+		local button = ui.dialogs.message{
+			title = _L['Set Watch Expression:'] .. ' ' .. expr, button1 = _L['Watch and Break'],
+			button2 = _L['Cancel'], button3 = _L['Watch Only']
 		}
-		if (button ~= 1 and button ~= 2) or expr == '' then return end
-		if button == 2 then no_break = true end
+		if not button or button == 2 then return end
+		if button == 3 then no_break = true end
 	end
 	if not watches[lang] then watches[lang] = {n = 0} end
 	local watch_exprs = watches[lang]
@@ -451,6 +452,7 @@ function M.remove_watch(id)
 			local watch = watches[lang][i]
 			if watch then items[#items + 1] = watch.expr end
 		end
+		if #items == 0 then return end
 		local i = ui.dialogs.list{title = _L['Remove Watch'], items = items}
 		if not i then return end
 		id = watches[lang][items[i]] -- TODO: handle duplicates
