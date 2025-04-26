@@ -45,12 +45,15 @@ retry(0)
 test('debugger.set_watch should prompt for a watch expression to add', function()
 	local f<close> = test.tmpfile(true)
 	local expr = 'expr'
-	local input_expr = test.stub(expr, 1)
+	local input_expr = test.stub(expr)
 	local _<close> = test.mock(ui.dialogs, 'input', input_expr)
+	local watch_option = test.stub(1)
+	local _<close> = test.mock(ui.dialogs, 'message', watch_option)
 
 	debugger.set_watch()
 
 	test.assert_equal(input_expr.called, true)
+	test.assert_equal(watch_option.called, true)
 end)
 
 test('debugger.remove_watch should prompt for a watch to remove', function()
