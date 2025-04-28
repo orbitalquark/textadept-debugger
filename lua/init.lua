@@ -91,12 +91,10 @@ local function get_state(level)
 	local frame = stack[stack.pos][1]
 	local file, line = frame[2], frame[4]
 	-- Lookup stack frames.
-	local call_stack = {}
-	for _, frame in ipairs(stack) do
+	local call_stack = table.map(stack, function(frame)
 		frame = frame[1]
-		call_stack[#call_stack + 1] = string.format('(%s) %s:%d', frame[1] or frame[5], frame[2],
-			frame[4])
-	end
+		return string.format('(%s) %s:%d', frame[1] or frame[5], frame[2], frame[4])
+	end)
 	call_stack.pos = stack.pos
 	-- Lookup variables (index 2) and upvalues (index 3) from the current frame.
 	local variables = {}
