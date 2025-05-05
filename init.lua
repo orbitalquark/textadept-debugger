@@ -494,9 +494,9 @@ function M.start(lang, ...)
 		return false -- no debugger for this language
 	end
 	states[lang] = {} -- initial value
-	if M.aliases[lang] then
-		-- for _, alias in ipairs(M.aliases[lang]) do states[alias] = states[lang] end
-	end
+	-- if M.aliases[lang] then
+	-- for _, alias in ipairs(M.aliases[lang]) do states[alias] = states[lang] end
+	-- end
 	if not breakpoints[lang] then breakpoints[lang] = {} end
 	for file, file_breakpoints in pairs(breakpoints[lang]) do
 		for line in pairs(file_breakpoints) do
@@ -517,7 +517,7 @@ function M.start(lang, ...)
 			view.size = ui.size[1] // #_VIEWS
 			view:goto_buffer(debug_buffer(_L['[Variables]']))
 			ui.update() -- ensure correct sizing for next split
-			local variables, call_stack = view:split(true)
+			view:split(true) -- variables, call_stack
 			view:goto_buffer(debug_buffer(_L['[Call Stack]']))
 			ui.goto_view(_VIEWS[1])
 		elseif #_VIEWS >= 3 then -- assume previous debug layout
@@ -719,7 +719,7 @@ function M.call_stack()
 end
 
 --- Returns whether or not the given buffer is the call stack buffer.
-local function is_cs_buf(buf) return buffer._type == _L['[Call Stack]'] end
+local function is_cs_buf(buffer) return buffer._type == _L['[Call Stack]'] end
 
 --- Prompts the user to select a stack frame to switch to from the current debugger call stack,
 -- unless the debugger is executing (e.g. not at a breakpoint).

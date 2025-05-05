@@ -88,8 +88,8 @@ local function get_state(level)
 	if not stack then return nil end -- debugger started, but not running yet
 	stack.pos = math.max(1, math.min(#stack, level or 1))
 	-- Lookup frame.
-	local frame = stack[stack.pos][1]
-	local file, line = frame[2], frame[4]
+	local current_frame = stack[stack.pos][1]
+	local file, line = current_frame[2], current_frame[4]
 	-- Lookup stack frames.
 	local call_stack = table.map(stack, function(frame)
 		frame = frame[1]
@@ -209,7 +209,7 @@ events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, expr, id, no_break)
 	end)
 	watches[id] = expr
 end)
-events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, expr, id)
+events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, _, id)
 	if lang ~= 'lua' then return end
 	handle('delw ' .. id, update_state) -- then remove watch from variables list
 	watches[id] = nil

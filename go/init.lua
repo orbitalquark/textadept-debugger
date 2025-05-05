@@ -48,7 +48,6 @@ local escaped = {['\t'] = '\\t', ['\r'] = '\\r', ['\n'] = '\\n'}
 -- @param[optchain] indent_level Internal level of indentation for multi-line printing.
 local function pretty_print(variable, multi_line, indent_level)
 	if not indent_level then indent_level = 0 end
-	local value
 	if #variable.children > 0 or variable.cap > 0 then
 		local items = {}
 		items[#items + 1] = variable.type .. '{'
@@ -112,7 +111,7 @@ end
 
 --- Helper function to update debugger state if possible.
 local function update_state(state)
-	local state = get_state((state or request('State', {NonBlocking = true})).State)
+	state = get_state((state or request('State', {NonBlocking = true})).State)
 	if state then debugger.update_state(state) end
 end
 
@@ -130,16 +129,15 @@ events.connect(events.DEBUGGER_START, function(lang, root, package, args)
 	-- current package's tests.
 	local dlv_cmd = 'dlv --headless --api-version=2 --log --log-output=rpc %s ./%s -- %s'
 	for _, command in pairs{'debug', 'test'} do
-		local args = {
+		local spawn_args = {
 			dlv_cmd:format(command, package, args or ''), root, function(output)
 				local orig_view = view
 				ui.output(output)
 				if view ~= orig_view then ui.goto_view(orig_view) end
 			end
 		}
-		if env then table.insert(args, 3, env) end
-		if M.logging then print('os.spawn: ' .. args[1]) end
-		proc = assert(os.spawn(table.unpack(args)))
+		if M.logging then print('os.spawn: ' .. spawn_args[1]) end
+		proc = assert(os.spawn(table.unpack(spawn_args)))
 		local port = tonumber(proc:read('l'):match(':(%d+)'))
 		if M.logging then print('connecting to ' .. port) end
 		client = debugger.socket.connect('localhost', port)
@@ -201,16 +199,16 @@ events.connect(events.DEBUGGER_BREAKPOINT_REMOVED, function(lang, file, line)
 	request('ClearBreakpoint', {Id = breakpoints[location]})
 	breakpoints[location] = nil
 end)
-events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, id, no_break)
+events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var)
 	if lang ~= 'go' then return end
 	-- TODO: request dlv to break on value change
 	watchpoints[var] = true
 	update_state() -- add watch to variables list
 end)
-events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var, id)
+events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var)
 	if lang ~= 'go' then return end
 	-- TODO: request dlv delete watchpoint
-	watchpoints[var] = nil
+	if watchpoints[var] then watchpoints[var] = nil end
 	update_state() -- remove watch from variables list
 end)
 

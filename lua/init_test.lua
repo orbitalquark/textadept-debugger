@@ -55,7 +55,7 @@ if not LINUX then skip('lua is only installed on Linux') end
 
 test('lua debugger should allow restarting and stopping', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local f<close> = test.tmpfile('.lua', [=[
+	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] x = 1
 --[[2]] y = 2
 --[[3]] z = x + y
@@ -80,7 +80,7 @@ if not LINUX then skip('lua is only installed on Linux') end
 
 test('lua debugger should allow adding and removing breakpoints during a debug session', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local f<close> = test.tmpfile('.lua', [=[
+	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] sum = 0
 --[[2]] for i = 1, 3 do
 --[[3]] 	sum = sum + i
@@ -104,7 +104,7 @@ if not LINUX then skip('lua is only installed on Linux') end
 
 test('lua debugger should support watch expressions', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local f<close> = test.tmpfile('.lua', [=[
+	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] sum = 0
 --[[2]] for i = 1, 3 do
 --[[3]] 	sum = sum + i
@@ -164,7 +164,7 @@ if not LINUX then skip('lua is only installed on Linux') end
 test('lua debugger should allow inspecting variables', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
 	local _<close> = test.mock(ui, 'tabs', false) -- for CURSES
-	local f<close> = test.tmpfile('.lua', [=[
+	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] x = 1
 --[[2]] print(x)
 ]=], true)
@@ -187,7 +187,7 @@ if not LINUX then skip('lua is only installed on Linux') end
 test('lua debugger should allow evaluating expressions', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
 	local _<close> = test.mock(ui, 'tabs', true) -- for CURSES
-	local f<close> = test.tmpfile('.lua', [=[
+	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] x = 1
 --[[2]] print(x)
 ]=], true)

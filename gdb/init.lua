@@ -71,8 +71,8 @@ local function get_state()
 	-- Fetch watches.
 	for id, expr in pairs(watchpoints) do
 		if type(id) ~= 'number' then goto continue end
-		local output = run_command('-data-evaluate-expression ' .. expr)
-		variables[expr] = output:match('value="(.*)"') or '<unable to evaluate>'
+		local value = run_command('-data-evaluate-expression ' .. expr)
+		variables[expr] = value:match('value="(.*)"') or '<unable to evaluate>'
 		::continue::
 	end
 	return {file = file, line = line, call_stack = call_stack, variables = variables}
@@ -164,7 +164,7 @@ events.connect(events.DEBUGGER_BREAKPOINT_REMOVED, function(lang, file, line)
 	run_command('-break-delete ' .. id)
 	breakpoints[id], breakpoints[location] = nil, nil
 end)
-events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, id, no_break)
+events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, _, no_break)
 	if lang ~= 'gdb' then return end
 	run_command('-break-watch ' .. var)
 	watchpoints.n = math.max(breakpoints.n, watchpoints.n) + 1
@@ -172,9 +172,9 @@ events.connect(events.DEBUGGER_WATCH_ADDED, function(lang, var, id, no_break)
 	if no_break then run_command('-break-delete ' .. watchpoints.n) end -- eat the ID
 	update_state() -- add watch to variables list
 end)
-events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var, id)
+events.connect(events.DEBUGGER_WATCH_REMOVED, function(lang, var)
 	if lang ~= 'gdb' then return end
-	id = watchpoints[var] -- TODO: handle duplicates
+	local id = watchpoints[var] -- TODO: handle duplicates
 	run_command('-break-delete ' .. id)
 	watchpoints[id], watchpoints[var] = nil, nil
 	-- TODO: handle duplicate vars

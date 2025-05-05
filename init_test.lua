@@ -3,7 +3,7 @@
 local debugger = require('debugger')
 
 test('debugger.toggle_breakpoint should set a breakpoint', function()
-	local f<close> = test.tmpfile(true)
+	local _<close> = test.tmpfile(true)
 
 	debugger.toggle_breakpoint()
 
@@ -13,7 +13,7 @@ test('debugger.toggle_breakpoint should set a breakpoint', function()
 end)
 
 test('debugger.toggle_breakpoint should remove a breakpoint', function()
-	local f<close> = test.tmpfile(true)
+	local _<close> = test.tmpfile(true)
 	debugger.toggle_breakpoint()
 
 	debugger.toggle_breakpoint()
@@ -23,7 +23,7 @@ test('debugger.toggle_breakpoint should remove a breakpoint', function()
 end)
 
 test('debugger.remove_breakpoint should prompt for a breakpoint to remove', function()
-	local f<close> = test.tmpfile(true)
+	local _<close> = test.tmpfile(true)
 	debugger.toggle_breakpoint()
 
 	-- Note: this test suite has toggled lots of breakpoints, so the list contains more than just
@@ -43,7 +43,7 @@ end)
 retry(0)
 
 test('debugger.set_watch should prompt for a watch expression to add', function()
-	local f<close> = test.tmpfile(true)
+	local _<close> = test.tmpfile(true)
 	local expr = 'expr'
 	local input_expr = test.stub(expr)
 	local _<close> = test.mock(ui.dialogs, 'input', input_expr)
@@ -57,7 +57,7 @@ test('debugger.set_watch should prompt for a watch expression to add', function(
 end)
 
 test('debugger.remove_watch should prompt for a watch to remove', function()
-	local f<close> = test.tmpfile(true)
+	local _<close> = test.tmpfile(true)
 	local expr = 'expr'
 	debugger.set_watch(expr)
 
