@@ -5,7 +5,7 @@ require('debugger.gdb').logger = test.log
 
 setup(function() buffer:set_lexer('c') end) -- for debugger.toggle_breakpoint(file, line)
 
-teardown(debugger.stop)
+teardown(function() debugger.stop('c') end)
 
 -- Compiles file *file* and returns its executable name.
 -- @param file File to compile.

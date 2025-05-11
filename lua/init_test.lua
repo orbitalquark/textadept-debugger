@@ -3,7 +3,7 @@
 local debugger = require('debugger')
 require('debugger.lua').logger = test.log
 
-teardown(debugger.stop)
+teardown(function() debugger.stop('lua') end)
 
 -- Returns a function for `test.wait()` that waits until the debugger reaches line number *line*.
 local function until_current_debug_line_is(line)

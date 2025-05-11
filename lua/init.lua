@@ -58,6 +58,7 @@ local function handle(action, callback)
 	-- print(coroutine.status(co), table.unpack(results))
 	if coroutine.status(co) == 'suspended' then
 		timeout(0.05, function()
+			if not client then return end -- debugger stopped (e.g. unit test finished)
 			local arg = results[3] -- results = {true, client, arg}
 			local data, err = client:receive(arg)
 			-- print('textadept', data, err)
