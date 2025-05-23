@@ -471,6 +471,7 @@ end
 local function debug_buffer(type)
 	for _, buffer in ipairs(_BUFFERS) do if buffer._type == type then return buffer end end
 	buffer.new()._type = type
+	buffer.tab_label = type
 	return buffer
 end
 
@@ -512,15 +513,21 @@ function M.start(lang, ...)
 		if #_VIEWS == 1 then
 			-- Split into 3 lower views: message buffer, variables, call stack.
 			-- Note if `ui.tabs` is true, the message buffer will be in a separate tab, not split view.
+			local orig_buffer = buffer
 			ui.output(_L['Debugger started'], '\n')
 			view:split(#_VIEWS > 1)
-			view.size = ui.size[1] // #_VIEWS
+			view.size = ui.size[2] // #_VIEWS
+			ui.update() -- ensure correct sizing for next split
+			view:goto_buffer(debug_buffer(_L['[Output Buffer]']))
+			view:split(true) -- output, variables
 			view:goto_buffer(debug_buffer(_L['[Variables]']))
 			ui.update() -- ensure correct sizing for next split
 			view:split(true) -- variables, call_stack
 			view:goto_buffer(debug_buffer(_L['[Call Stack]']))
+			view.parent_size = ui.size[1] // 3
 			ui.goto_view(_VIEWS[1])
-		elseif #_VIEWS >= 3 then -- assume previous debug layout
+			view:goto_buffer(orig_buffer)
+		elseif #_VIEWS > 3 then -- assume previous debug layout
 			_VIEWS[#_VIEWS - 1]:goto_buffer(debug_buffer(_L['[Variables]']))
 			_VIEWS[#_VIEWS]:goto_buffer(debug_buffer(_L['[Call Stack]']))
 		end
