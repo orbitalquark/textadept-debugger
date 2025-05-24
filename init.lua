@@ -472,6 +472,7 @@ local function debug_buffer(type)
 	for _, buffer in ipairs(_BUFFERS) do if buffer._type == type then return buffer end end
 	buffer.new()._type = type
 	buffer.tab_label = type
+	buffer.undo_collection = false
 	return buffer
 end
 
@@ -636,8 +637,6 @@ function M.stop(lang, ...)
 		if buffer._type == _L['[Variables]'] or buffer._type == _L['[Call Stack]'] then
 			buffer:marker_delete_all(-1)
 			buffer:clear_all()
-			buffer:empty_undo_buffer()
-			buffer:set_save_point()
 		end
 	end
 	events.disconnect(events.UPDATE_UI, update_statusbar)
@@ -691,22 +690,22 @@ function M.variables()
 	end
 	-- TODO: save/restore view first visible line?
 	buffer:marker_delete_all(-1)
-	buffer:set_text(_L['Variables and Watches'] .. '\n')
+	local lines, markers = {_L['Variables and Watches']}, {}
 	local names = {}
 	for k in pairs(states[lang].variables) do names[#names + 1] = k end
 	table.sort(names)
 	for i = 1, #names do
 		local name, value = names[i], states[lang].variables[names[i]]
-		buffer:append_text(string.format('%s = %s\n', name, value))
+		lines[#lines + 1] = string.format('%s = %s\n', name, value)
 		if watches[lang] and watches[lang][name] then
-			buffer:marker_add(1 + i, textadept.bookmarks.MARK_BOOKMARK)
+			markers[1 + i] = textadept.bookmarks.MARK_BOOKMARK
 		end
 		if prev_variables[name] ~= nil and value ~= prev_variables[name] then
-			buffer:marker_add(1 + i, M.MARK_BREAKPOINT) -- recycle this marker
+			markers[1 + i] = M.MARK_BREAKPOINT -- recycle this marker
 		end
 	end
-	buffer:empty_undo_buffer()
-	buffer:set_save_point()
+	buffer:set_text(table.concat(lines, '\n'))
+	for i, mark in pairs(markers) do buffer:marker_add(i, mark) end
 end
 
 --- Updates the buffer containing the call stack.
@@ -717,12 +716,11 @@ function M.call_stack()
 	local buffer = debug_buffer(_L['[Call Stack]'])
 	buffer._debug_view = view -- for switching back prior to setting frame
 	buffer:marker_delete_all(-1)
-	buffer:set_text(_L['Call Stack'] .. '\n')
+	local lines = {_L['Call Stack']}
 	local call_stack = states[lang].call_stack
-	for i = 1, #call_stack do buffer:append_text(call_stack[i] .. '\n') end
+	for i = 1, #call_stack do lines[#lines + 1] = call_stack[i] end
+	buffer:set_text(table.concat(lines, '\n'))
 	buffer:marker_add(1 + (call_stack.pos or 1), M.MARK_CALLSTACK)
-	buffer:empty_undo_buffer()
-	buffer:set_save_point()
 end
 
 --- Returns whether or not the given buffer is the call stack buffer.
@@ -841,8 +839,6 @@ for i = 1, #menubar do
 		{_L['View Call Stack'], M.call_stack}, --
 		{_L['Set Call Stack Frame...'], M.set_frame}, {
 			_L['Evaluate...'], function()
-				-- TODO: command entry loses focus when run from select command dialog. This works fine
-				-- when run from menu directly.
 				local lang = get_lang()
 				if not states[lang] or states[lang].executing then return end
 				ui.command_entry.run(_L['Expression:'], M.evaluate, 'lua')
