@@ -40,7 +40,6 @@ test('debugger.remove_breakpoint should prompt for a breakpoint to remove', func
 	local breakpoint_lines = test.get_marked_lines(debugger.MARK_BREAKPOINT)
 	test.assert_equal(breakpoint_lines, {})
 end)
-retry(0)
 
 test('debugger.set_watch should prompt for a watch expression to add', function()
 	local _<close> = test.tmpfile(true)
