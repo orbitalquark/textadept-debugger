@@ -13,10 +13,6 @@ M.logging = true
 -- The default value is `true`.
 M.log_rpc = true
 
-if not rawget(_L, 'No project root found') then
-	_L['No project root found'] = 'No project root found'
-end
-
 local debugger = require('debugger')
 local json = require('debugger.dkjson')
 

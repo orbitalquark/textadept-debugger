@@ -212,55 +212,6 @@ M.MARK_DEBUGLINE_COLOR = 0x6DD96D
 M.MARK_CALLSTACK_COLOR = 0x6DD9D9
 -- M.MARK_CALLSTACK_ALPHA = 128
 
--- Localizations.
-local _L = _L
-if not rawget(_L, 'Remove Breakpoint') then
-	-- Debugger messages.
-	_L['Debugging'] = 'Debugging'
-	_L['paused'] = 'paused'
-	_L['executing'] = 'executing'
-	_L['Cannot Set Breakpoint'] = 'Cannot Set Breakpoint'
-	_L['Debugger is executing'] = 'Debugger is executing'
-	_L['Please wait until debugger is stopped or paused'] =
-		'Please wait until debugger is stopped or paused'
-	_L['Cannot Remove Breakpoint'] = 'Cannot Remove Breakpoint'
-	_L['Remove Breakpoint'] = 'Remove Breakpoint'
-	_L['Breakpoint:'] = 'Breakpoint:'
-	_L['Cannot Set Watch'] = 'Cannot Set Watch'
-	_L['Set Watch Expression:'] = 'Set Watch Expression:'
-	_L['Expression:'] = 'Expression:'
-	_L['Watch and Break'] = 'Watch and _Break'
-	_L['Watch Only'] = '_Watch Only'
-	_L['Cannot Remove Watch'] = 'Cannot Remove Watch'
-	_L['Remove Watch'] = 'Remove Watch'
-	_L['Error Starting Debugger'] = 'Error Starting Debugger'
-	_L['[Variables]'] = '[Variables]'
-	_L['[Call Stack]'] = '[Call Stack]'
-	_L['Debugger started'] = 'Debugger started'
-	_L['Debugger stopped'] = 'Debugger stopped'
-	_L['Variables and Watches'] = 'Variables and Watches'
-	_L['Value'] = 'Value'
-	_L['Call Stack'] = 'Call Stack'
-	_L['Set Frame'] = '_Set Frame'
-	-- Menu.
-	_L['Debug'] = '_Debug'
-	_L['Go/Continue'] = 'Go/_Continue'
-	_L['Step Over'] = 'Step _Over'
-	_L['Step Into'] = 'Step _Into'
-	_L['Step Out'] = 'Step O_ut'
-	_L['Pause/Break'] = 'Pause/_Break'
-	_L['Restart'] = '_Restart'
-	_L['Inspect'] = 'I_nspect'
-	_L['View Variables'] = 'View _Variables'
-	_L['View Call Stack'] = 'View Ca_ll Stack'
-	_L['Set Call Stack Frame...'] = 'Set Call Stac_k Frame...'
-	_L['Evaluate...'] = '_Evaluate...'
-	_L['Toggle Breakpoint'] = 'Toggle _Breakpoint'
-	_L['Remove Breakpoint...'] = 'Remo_ve Breakpoint...'
-	_L['Set Watch Expression'] = 'Set _Watch Expression'
-	_L['Remove Watch Expression...'] = 'Remove Watch E_xpression...'
-end
-
 --- The marker number for breakpoints.
 M.MARK_BREAKPOINT = view.new_marker_number()
 --- The marker number for the current debug line.
@@ -821,6 +772,22 @@ events.connect(events.DOUBLE_CLICK,
 
 -- Add menu entries and configure key bindings.
 -- (Insert 'Debug' menu after 'Tools'.)
+_L['Debug'] = '_Debug'
+_L['Go/Continue'] = 'Go/_Continue'
+_L['Step Over'] = 'Step _Over'
+_L['Step Into'] = 'Step _Into'
+_L['Step Out'] = 'Step O_ut'
+_L['Pause/Break'] = 'Pause/_Break'
+_L['Restart'] = '_Restart'
+_L['Inspect'] = 'I_nspect'
+_L['View Variables'] = 'View _Variables'
+_L['View Call Stack'] = 'View Ca_ll Stack'
+_L['Set Call Stack Frame...'] = 'Set Call Stac_k Frame...'
+_L['Evaluate...'] = '_Evaluate...'
+_L['Toggle Breakpoint'] = 'Toggle _Breakpoint'
+_L['Remove Breakpoint...'] = 'Remo_ve Breakpoint...'
+_L['Set Watch Expression'] = 'Set _Watch Expression'
+_L['Remove Watch Expression...'] = 'Remove Watch E_xpression...'
 local menubar = textadept.menu.menubar
 for i = 1, #menubar do
 	if menubar[i].title ~= _L['Tools'] then goto continue end
