@@ -1,0 +1,10 @@
+--- a/src/mobdebug.lua	2025-10-17 10:51:18
++++ b/src/mobdebug.lua	2025-10-17 10:41:10
+@@ -125,6 +125,7 @@
+   error(deferror)
+ end
+ local function q(s) return string.gsub(s, '([%(%)%.%%%+%-%*%?%[%^%$%]])','%%%1') end
++local print = function() end -- do not print anything to stdout
+ 
+ local serpent = (function() ---- include Serpent module for serialization
+ local n, v = "serpent", "0.302" -- (C) 2012-18 Paul Kulchenko; MIT License
