@@ -468,7 +468,7 @@ function M.start(lang, ...)
 			local orig_buffer = buffer
 			ui.output(_L['Debugger started'], '\n')
 			view:split(#_VIEWS > 1)
-			view.size = ui.size[2] // #_VIEWS
+			view.split_pos = ui.size[2] // #_VIEWS
 			ui.update() -- ensure correct sizing for next split
 			view:goto_buffer(debug_buffer(_L['[Output Buffer]']))
 			view:split(true) -- output, variables
@@ -476,7 +476,7 @@ function M.start(lang, ...)
 			ui.update() -- ensure correct sizing for next split
 			view:split(true) -- variables, call_stack
 			view:goto_buffer(debug_buffer(_L['[Call Stack]']))
-			view.parent_size = ui.size[1] // 3
+			view.parent_split_pos = ui.size[1] // 3
 			ui.goto_view(_VIEWS[1])
 			view:goto_buffer(orig_buffer)
 		elseif #_VIEWS > 3 then -- assume previous debug layout
