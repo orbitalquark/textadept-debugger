@@ -1,4 +1,4 @@
--- Copyright 2007-2025 Mitchell. See LICENSE.
+-- Copyright 2007-2026 Mitchell. See LICENSE.
 
 --- Language debugging support for Textadept.
 -- All this module does is emit debugger events. Submodules that implement debuggers listen
