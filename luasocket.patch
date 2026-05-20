@@ -6,9 +6,9 @@
  local math = require("math")
 -local socket = require("socket.core")
 +local lib = 'socket.core'
-+if OSX then
++if OS == 'macos' then
 +    lib = lib .. 'osx'
-+elseif LINUX and io.popen('uname -m'):read() == 'aarch64' then
++elseif OS == 'linux' and io.popen('uname -m'):read() == 'aarch64' then
 +    lib = lib .. 'arm'
 +end
 +local socket = require(lib)

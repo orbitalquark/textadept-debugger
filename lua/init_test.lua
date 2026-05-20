@@ -15,7 +15,7 @@ end
 
 test('lua debugger should start, continue, and step', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local _<close> = test.mock(ui, 'tabs', true) -- for CURSES
+	local _<close> = test.mock(ui, 'tabs', true) -- for terminal version
 	local f<close> = test.tmpfile('.lua', [=[
 --[[1]] function factorial(n)
 --[[2]] 	if n == 0 then
@@ -51,7 +51,7 @@ test('lua debugger should start, continue, and step', function()
 	test.assert_equal(buffer._type, _L['[Output Buffer]'])
 	test.assert_equal(buffer:get_text(), '6\n')
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end
 
 test('lua debugger should allow restarting and stopping', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -76,7 +76,7 @@ test('lua debugger should allow restarting and stopping', function()
 
 	test.assert_equal(#_BUFFERS, 1) -- did not output anything
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end
 
 test('lua debugger should allow adding and removing breakpoints during a debug session', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -100,7 +100,7 @@ test('lua debugger should allow adding and removing breakpoints during a debug s
 	debugger.continue()
 	test.wait(function() return stopped.called end)
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end
 
 test('lua debugger should support watch expressions', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -132,7 +132,7 @@ test('lua debugger should support watch expressions', function()
 	debugger.continue()
 	test.wait(function() return stopped.called end)
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end
 
 test('lua debugger should support changing the stack frame', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -159,11 +159,11 @@ test('lua debugger should support changing the stack frame', function()
 	test.assert_contains(dialog_opts.items, '(main) ' .. f.filename .. ':4')
 	test.wait(until_current_debug_line_is(2))
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end
 
 test('lua debugger should allow inspecting variables', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local _<close> = test.mock(ui, 'tabs', false) -- for CURSES
+	local _<close> = test.mock(ui, 'tabs', false) -- for terminal version
 	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] x = 1
 --[[2]] print(x)
@@ -182,11 +182,11 @@ test('lua debugger should allow inspecting variables', function()
 	local value = call_tip_show.args[3]
 	test.assert_equal(value, 'x = 1')
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end
 
 test('lua debugger should allow evaluating expressions', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local _<close> = test.mock(ui, 'tabs', true) -- for CURSES
+	local _<close> = test.mock(ui, 'tabs', true) -- for terminal version
 	local _<close> = test.tmpfile('.lua', [=[
 --[[1]] x = 1
 --[[2]] print(x)
@@ -199,4 +199,4 @@ test('lua debugger should allow evaluating expressions', function()
 	debugger.evaluate('print(x)')
 	test.wait(function() return buffer:get_text() == '1\n' end)
 end)
-if not LINUX then skip('lua is only installed on Linux') end
+if OS ~= 'linux' then skip('lua is only installed on Linux') end

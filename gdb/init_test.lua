@@ -67,7 +67,7 @@ test('gdb debugger should start, continue, and step', function()
 	test.wait(function() return stopped.called end)
 	test.assert_equal(stopped.args, {'gdb'})
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
 
 test('gdb debugger should allow restarting and stopping', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -98,7 +98,7 @@ test('gdb debugger should allow restarting and stopping', function()
 	debugger.stop()
 	test.wait(function() return buffer:marker_next(1, 1 << debugger.MARK_DEBUGLINE - 1) == -1 end)
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
 
 test('gdb debugger should allow adding and removing breakpoints during a debug session', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -130,7 +130,7 @@ test('gdb debugger should allow adding and removing breakpoints during a debug s
 	debugger.continue()
 	test.wait(function() return stopped.called end)
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
 
 test('gdb debugger should support watch expressions', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -165,7 +165,7 @@ test('gdb debugger should support watch expressions', function()
 	debugger.continue()
 	test.wait(function() return stopped.called end)
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
 
 test('gdb debugger should support changing the stack frame', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -201,7 +201,7 @@ test('gdb debugger should support changing the stack frame', function()
 	test.assert_contains(dialog_opts.items, '(main) ' .. file .. ':6')
 	test.wait(until_current_debug_line_is(2))
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
 
 test('gdb debugger should allow inspecting variables', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
@@ -230,11 +230,11 @@ test('gdb debugger should allow inspecting variables', function()
 	local value = call_tip_show.args[3]
 	test.assert_equal(value, 'x = 1')
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
 
 test('gdb debugger should allow evaluating expressions', function()
 	local _<close> = test.mock(debugger, 'use_status_buffers', false)
-	local _<close> = test.mock(ui, 'tabs', true) -- for CURSES
+	local _<close> = test.mock(ui, 'tabs', true) -- for terminal version
 	local file = 'file.c'
 	local dir<close> = test.tmpdir({
 		['.hg'] = {}, --
@@ -255,4 +255,4 @@ test('gdb debugger should allow evaluating expressions', function()
 	test.wait(function() return buffer:get_text() == '1\n' end)
 	buffer:close()
 end)
-if not LINUX then skip('gdb is only installed on Linux') end
+if OS ~= 'linux' then skip('gdb is only installed on Linux') end
